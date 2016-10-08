@@ -38,6 +38,11 @@ s[0] = np.rint( (L - 1) * histr[i] ) #Round to closest int number
 for i in range(initialValue, histLen):
     s[i] = np.rint( s[i-1] + (L - 1) * histr[i] )
 
+fig1 = plt.figure(2)
+fig1.suptitle('Transformation function',fontsize=14, fontweight='bold')
+ax = fig1.add_subplot(111)
+ax.set_xlabel('x', fontweight='bold')
+ax.set_ylabel('y', fontweight='bold')
 plt.plot(s)
 plt.show()
 
