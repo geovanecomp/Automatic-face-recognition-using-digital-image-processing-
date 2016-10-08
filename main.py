@@ -1,14 +1,16 @@
+# -*- coding: UTF-8 -*-
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 #1º Step: Get the images-------------------------------------------------------------
 
-originalImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
-transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
+#originalImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
+#transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
 
-#originalImage = cv2.imread('pout.tif', 0)
-#transformedImage = cv2.imread('pout.tif', 0)
+originalImage = cv2.imread('pout.tif', 0)
+transformedImage = cv2.imread('pout.tif', 0)
 
 #2º Step: Normalize-------------------------------------------------------------
 
@@ -24,10 +26,14 @@ transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
 histrOriginalImage = cv2.calcHist([originalImage],[0],None,[256],[0,256])
 fig1 = plt.figure(1)
 fig1.suptitle('Histogram Comparison', fontsize=14, fontweight='bold')
-ax = fig1.add_subplot(111)
+ax = fig1.add_subplot(1,1,1)
+#plt.ylabel('teste', fontweight='bold')
 ax.set_xlabel('x', fontweight='bold')
 ax.set_ylabel('y', fontweight='bold')
-plt.plot(histrOriginalImage)
+blue_patch = mpatches.Patch(color='blue', label='Original Histogram')
+red_patch = mpatches.Patch(color='red', label='Transformed Histogram')
+plt.legend(handles=[blue_patch, red_patch])
+plt.plot(histrOriginalImage, color='blue')
 
 #Getting importants informations
 N = len(originalImage)
@@ -39,9 +45,6 @@ histLen = len(histrOriginalImage)
 for i in range(histLen):
     histrOriginalImage[i] = histrOriginalImage[i] / totalPixels
 
-plt.plot(histr)
-plt.show()
-
 #3º Step: Create a transformation function--------------------------------------
 
 L = 256 #Number of pixels
@@ -49,9 +52,9 @@ s = np.zeros((histLen)) #Creating a vector with the same length of the histogram
 initialValue = 1
 
 #Creating the transformation function 's'
-s[0] = np.rint( (L - 1) * histr[i] ) #Round to closest int number
+s[0] = np.rint( (L - 1) * histrOriginalImage[0] ) #Round to closest int number
 for i in range(initialValue, histLen):
-    s[i] = np.rint( s[i-1] + (L - 1) * histr[i] )
+    s[i] = np.rint( s[i-1] + (L - 1) * histrOriginalImage[i] )
 
 #4º Step: Apply the transformation----------------------------------------------
 
@@ -64,7 +67,7 @@ for i in range(N):
 
 #Plot of the histogram of the transformed image
 histrTransformedImage = cv2.calcHist([transformedImage],[0],None,[256],[0,256])
-plt.plot(histrTransformedImage)
+plt.plot(histrTransformedImage, color='red')
 plt.show()
 
 #Plot of the transformation function
@@ -74,6 +77,7 @@ ax = fig2.add_subplot(111)
 ax.set_xlabel('x', fontweight='bold')
 ax.set_ylabel('y', fontweight='bold')
 plt.plot(s)
+plt.show()
 
 #Opencv histogram equalization
 equOpencvImage = cv2.equalizeHist(originalImage)
@@ -81,7 +85,7 @@ equOpencvImage = cv2.equalizeHist(originalImage)
 #Showing the images
 #imageComparison = np.concatenate((originalImage, transformedImage), axis=0) #another way to compare images
 imageComparison = np.hstack((originalImage, transformedImage, equOpencvImage))
-cv2.imshow('Images Comparison', imageComparison)
+cv2.imshow('Images Comparison: Original x My Hist Equ x Opencv Hist Equ ', imageComparison)
 cv2.waitKey(0)
 
 #-------------------------------------------------------------------------------
