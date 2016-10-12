@@ -10,7 +10,7 @@ import matplotlib.patches as mpatches
 #transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
 
 originalImage = cv2.imread('pout.tif', 0)
-transformedImage = cv2.imread('pout.tif', 0)
+transformedImage = np.zeros(originalImage.shape, dtype=np.uint8)
 
 #2º Step: Normalize-------------------------------------------------------------
 
