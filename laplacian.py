@@ -12,6 +12,17 @@ import matplotlib.patches as mpatches
 # a = np.delete(a,1, 0)
 #
 # print a
+#to test
+    #convert to grayscale
+    #imArray = cv2.cvtColor( imArray,cv2.COLOR_RGB2GRAY )
+
+    #imArray =  np.float32(imArray)
+    #imArray /= 255;
+
+#make operations, so
+
+    #imArray_H = imArray_H * 255
+    #imArray_H =  np.uint8(imArray_H)
 
 
 #Para nao 'abreviar' matrizes grandes
@@ -23,9 +34,10 @@ np.set_printoptions(threshold='nan')
 #transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
 
 originalImage = cv2.imread('lua.tif', 0)
+originalImage = np.float32(originalImage)
 lenImgX, lenImgY = np.shape(originalImage) #Number of lines and columns
 
-#transformedImage = np.copy(originalImage)
+transformedImage = np.copy(originalImage)
 #transformedImage = np.zeros((lenImgX, lenImgY), dtype=np.uint8)
 
 mask = np.zeros((3,3), dtype=np.int8)
@@ -66,7 +78,7 @@ def deleteColumns(matrix, quantity, position):
 
 
 def laplacianMask(f):
-    f = np.int16(f)
+    #f = np.int16(f)
     lenX, lenY = np.shape(f)
     border = 1
     #g = np.zeros((lenX, lenY), dtype=np.uint8)
@@ -145,14 +157,15 @@ def applyMask(image):
     g = deleteColumns(g, 2, 0)
     g = deleteColumns(g, 2, len(g[0]))
 
-    g = np.uint8(g)
+    #g = np.uint8(g)
 
     return g
 
 
 def laplacianFilter(image):
     #image = np.int16(image)
-    transformedImage = np.zeros(image.shape, dtype=np.uint8)
+    #transformedImage = np.zeros(image.shape, dtype=np.uint8)
+    transformedImage = np.zeros(image.shape, dtype=np.float32)
     laplacian = laplacianMask(image)
     #laplacian = applyMask(image)
 
@@ -160,13 +173,16 @@ def laplacianFilter(image):
     for i in range(len(image)):
         for j in range(len(image[0])):
             value = image[i][j] + c*laplacian[i][j]
-            if value < 0:
-                value = 0
-
-            if value > 255:
-                value = 255
+            # if value < 0:
+            #     value = 0
+            #
+            # if value > 255:
+            #     value = 255
             transformedImage[i][j] = value
 
+    image = np.uint8(image)
+    laplacian = np.uint8(laplacian)
+    transformedImage = np.uint8(transformedImage)
     imageComparison = np.hstack((image, laplacian, transformedImage))
     cv2.imshow('Laplacian', imageComparison)
     cv2.waitKey(0)
