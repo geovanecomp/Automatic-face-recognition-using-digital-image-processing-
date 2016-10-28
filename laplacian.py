@@ -4,46 +4,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# a = np.array([[1,2,3],[2,3,4]])
-# a = np.insert(a, 0, values=0, axis=1)
-#
-# print a
-#
-# a = np.delete(a,1, 0)
-#
-# print a
-#to test
-    #convert to grayscale
-    #imArray = cv2.cvtColor( imArray,cv2.COLOR_RGB2GRAY )
-
-    #imArray =  np.float32(imArray)
-    #imArray /= 255;
-
-#make operations, so
-
-    #imArray_H = imArray_H * 255
-    #imArray_H =  np.uint8(imArray_H)
-
-
-#Para nao 'abreviar' matrizes grandes
+#To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
 
 #1º Step: Get the images and define auxiliary matrices--------------------------
 
 #originalImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
-#transformedImage = cv2.imread('source/TrainDatabase/1.jpg', 0)
-
 originalImage = cv2.imread('lua.tif', 0)
+
+#Converting the image to make operations
 originalImage = np.float32(originalImage)
+
 lenImgX, lenImgY = np.shape(originalImage) #Number of lines and columns
 
 transformedImage = np.copy(originalImage)
-#transformedImage = np.zeros((lenImgX, lenImgY), dtype=np.uint8)
 
 mask = np.zeros((3,3), dtype=np.int8)
 lenMaskX, lenMaskY = np.shape(mask)
 
-#-------------------------------------------------------------------------------
 #2º Step: Define the functions--------------------------------------------------
 
 def fillMask():
@@ -78,23 +56,16 @@ def deleteColumns(matrix, quantity, position):
 
 
 def laplacianMask(f):
-    #f = np.int16(f)
     lenX, lenY = np.shape(f)
     border = 1
-    #g = np.zeros((lenX, lenY), dtype=np.uint8)
     g = np.zeros((lenX, lenY))
     for i in range(border, lenX - border):
         for j in range (border, lenY - border):
-            # diagonalValues = f[i+1][j+1] + f[i-1][j+1] + f[i-1][j-1]+ f[i+1][j-1]
-            # mainValues = f[i+1][j] + f[i-1][j] + f[i][j+1] + f[i][j-1]
-            # centerValue = 8 * f[i][j]
-            #
-            # g[i][j] = mainValues + diagonalValues - centerValue
+            diagonalValues = f[i+1][j+1] + f[i-1][j+1] + f[i-1][j-1]+ f[i+1][j-1]
+            mainValues = f[i+1][j] + f[i-1][j] + f[i][j+1] + f[i][j-1]
+            centerValue = 8 * f[i][j]
 
-
-            value = f[i+1][j] + f[i-1][j] + f[i][j+1] + f[i][j-1] + f[i+1][j+1] + f[i-1][j+1] + f[i-1][j-1] + f[i+1][j-1] - 8 * f[i][j]
-            #value = - f[i+1][j] - f[i-1][j] - f[i][j+1] - f[i][j-1] - f[i+1][j+1] - f[i-1][j+1] - f[i-1][j-1] - f[i+1][j-1] + 8 * f[i][j]
-            #value = f[i+1][j] + f[i-1][j] + f[i][j+1] + f[i][j-1] -4 * f[i][j]
+            value = mainValues + diagonalValues - centerValue
 
             if value > 255:
                 value = 255
@@ -103,12 +74,9 @@ def laplacianMask(f):
                 value = 0
 
             g[i][j] = value
-
-    g = np.uint8(g)
     return g
 
 def applyMask(image):
-    image = np.int16(image)
     w = fillMask()
     m, n = w.shape
 
@@ -119,8 +87,7 @@ def applyMask(image):
     image = addColumns(image, 2, len(image[0]))
 
     #g = np.zeros(image.shape, dtype=np.uint8)
-    g = np.zeros(image.shape, dtype=np.int16)
-
+    g = np.zeros(image.shape, dtype=np.float32)
     a = (m-1)/2
     b = (n-1)/2
 
@@ -136,11 +103,11 @@ def applyMask(image):
                 for t in range(2):
                     value = w[s][t]*image[x+s-1][y+t-1] + g[x+1][y+1]
 
-                    # if value < 0:
-                    #     value = 0
-                    #
-                    # if value > 255:
-                    #     value = 255
+                    if value < 0:
+                        value = 0
+
+                    if value > 255:
+                        value = 255
 
                     g[x+1][y+1] = value
 
@@ -157,43 +124,40 @@ def applyMask(image):
     g = deleteColumns(g, 2, 0)
     g = deleteColumns(g, 2, len(g[0]))
 
-    #g = np.uint8(g)
-
     return g
 
 
 def laplacianFilter(image):
-    #image = np.int16(image)
-    #transformedImage = np.zeros(image.shape, dtype=np.uint8)
+
     transformedImage = np.zeros(image.shape, dtype=np.float32)
     laplacian = laplacianMask(image)
     #laplacian = applyMask(image)
 
     c = -1
+
     for i in range(len(image)):
         for j in range(len(image[0])):
             value = image[i][j] + c*laplacian[i][j]
-            # if value < 0:
-            #     value = 0
-            #
-            # if value > 255:
-            #     value = 255
+            if value < 0:
+                value = 0
+
+            if value > 255:
+                value = 255
+
             transformedImage[i][j] = value
 
-    image = np.uint8(image)
-    laplacian = np.uint8(laplacian)
-    transformedImage = np.uint8(transformedImage)
-    imageComparison = np.hstack((image, laplacian, transformedImage))
-    cv2.imshow('Laplacian', imageComparison)
-    cv2.waitKey(0)
 
-    return transformedImage
+    return laplacian, transformedImage
 
+#3º step: Showing the results---------------------------------------------------
 
-transformedImage = laplacianFilter(originalImage)
-#transformedImage = applyMask(originalImage)
+laplacian, transformedImage = laplacianFilter(originalImage)
 
-# imageComparison = np.hstack((originalImage, transformedImage))
-#
-# cv2.imshow('Images Comparison: Original x Transformed', imageComparison)
-# cv2.waitKey(0)
+#Converting the images to unsigned int
+originalImage = np.uint8(originalImage)
+laplacian = np.uint8(laplacian)
+transformedImage = np.uint8(transformedImage)
+
+imageComparison = np.hstack((originalImage, laplacian, transformedImage))
+cv2.imshow('Laplacian', imageComparison)
+cv2.waitKey(0)
