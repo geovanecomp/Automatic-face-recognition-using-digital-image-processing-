@@ -86,37 +86,25 @@ def applyMask(image):
     image = addColumns(image, 2, 0)
     image = addColumns(image, 2, len(image[0]))
 
-    #g = np.zeros(image.shape, dtype=np.uint8)
     g = np.zeros(image.shape, dtype=np.float32)
     a = (m-1)/2
     b = (n-1)/2
+    value = 0
 
-    # for x in range(len(image)-1):
-    #     for y in range(len(image[0])-1):
-    #         for s in range(-a, a):
-    #             for t in range(-b, b):
-    #                 g[x+1][y+1] = w[s][t]*image[x+s][y+t] + g[x+1][y+1]
+    for x in range(len(image)-2):
+        for y in range(len(image[0])-2):
+            for s in range(len(w)):
+                for t in range(len(w[0])):
+                    value = w[s][t]*image[x+s][y+t] + value
 
-    for x in range(len(image)-1):
-        for y in range(len(image[0])-1):
-            for s in range(2):
-                for t in range(2):
-                    value = w[s][t]*image[x+s-1][y+t-1] + g[x+1][y+1]
+            if value < 0:
+                value = 0
 
-                    if value < 0:
-                        value = 0
+            if value > 255:
+                value = 255
 
-                    if value > 255:
-                        value = 255
-
-                    g[x+1][y+1] = value
-
-                    #g[x+1][y+1] = w[s][t]*image[x+s-1][y+t-1] + g[x+1][y+1]
-            # if g[x+1][y+1] > 255:
-            #     g[x+1][y+1] = 255
-            #
-            # if g[x+1][y+1] < 0:
-            #     g[x+1][y+1] = 0
+            g[x+1][y+1] = value
+            value = 0
 
     g = deleteRows(g, 2, 0)
     g = deleteRows(g, 2, len(g))
@@ -130,6 +118,7 @@ def applyMask(image):
 def laplacianFilter(image):
 
     transformedImage = np.zeros(image.shape, dtype=np.float32)
+    #I have made the laplacian filter using two forms
     laplacian = laplacianMask(image)
     #laplacian = applyMask(image)
 
