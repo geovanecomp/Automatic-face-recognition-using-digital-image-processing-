@@ -7,7 +7,7 @@ import matplotlib.patches as mpatches
 #To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
 
-class Laplacian(object):
+class LaplacianFilter(object):
     'This class is responsible for apply the Laplacian Filter on an image - Emphasizes details'
 
     def __init__(self, image):
@@ -46,7 +46,7 @@ class Laplacian(object):
             matrix = np.delete(matrix, position, axis=1)
         return matrix
 
-    def __showResults(self, lDerivative approximationaplacian, transformedImage):
+    def __showResults(self, laplacian, transformedImage):
         imageComparison = np.hstack((self.originalImage, laplacian, transformedImage))
         cv2.imshow('Laplacian Filter: Original x Laplacian x Transformed Image', imageComparison)
         cv2.waitKey(0)
