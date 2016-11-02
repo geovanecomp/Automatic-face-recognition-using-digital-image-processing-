@@ -9,15 +9,15 @@ class HistogramEqualization(object):
     def __init__(self, image):
         self.originalImage = cv2.imread(image, 0)
         self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
+        self.M = len(self.originalImage)
+        self.N = len(self.originalImage[0])
 
-#2º Step: Normalize-------------------------------------------------------------
+#1º Step: Normalize the original image's histogram------------------------------
     def __normalizeHistogram(self, histogram):
 
         #Getting importants informations
         normalizedHistogram = np.copy(histogram)
-        N = len(self.originalImage)
-        M = len(self.originalImage[0])
-        totalPixels = N*M
+        totalPixels = self.M*self.N
         histLen = len(normalizedHistogram)
 
         #Normalizing the histogram (The sum of the all elements will be 1)
@@ -27,7 +27,7 @@ class HistogramEqualization(object):
         return normalizedHistogram
 
 
-#3º Step: Create a transformation function--------------------------------------
+#2º Step: Create a transformation function--------------------------------------
     def __makeTransformationFunction(self, histogram):
 
         L = 256 #Number of pixels
@@ -42,18 +42,15 @@ class HistogramEqualization(object):
 
         return s
 
-#4º Step: Apply the transformation----------------------------------------------
+#3º Step: Apply the transformation----------------------------------------------
     def __applyTransformation(self, s):
 
-        N = len(self.originalImage)
-        M = len(self.originalImage[0])
-
-        for i in range(N):
-            for j in range(M):
+        for i in range(self.M):
+            for j in range(self.N):
                 #Applying the transformation to the originalImage
                 self.transformedImage[i][j] = s[self.originalImage[i][j]]
 
-#5º Step: Show the results------------------------------------------------------
+#Opcional Step: Show the results------------------------------------------------------
     def __showResults(self, histrOriginalImage, histrTransformedImage, s):
 
         fig1 = plt.figure(1)
@@ -82,6 +79,7 @@ class HistogramEqualization(object):
         plt.plot(s)
         plt.show()
 
+#Final Step --------------------------------------------------------------------
     #Calculate the histogram. If results = true, will show the plots
     def calculate(self, results=False):
 
@@ -98,10 +96,8 @@ class HistogramEqualization(object):
         s = self.__makeTransformationFunction(normalizedHistrOriginalImage)
         self.__applyTransformation(s)
 
-        #Plot of the histogram of the transformed image
-        histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
-
         if results == True:
+            histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
             self.__showResults(histrOriginalImage, histrTransformedImage, s)
 
         #Opencv histogram equalization
