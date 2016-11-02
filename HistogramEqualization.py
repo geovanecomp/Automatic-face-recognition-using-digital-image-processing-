@@ -8,9 +8,9 @@ import matplotlib.patches as mpatches
 np.set_printoptions(threshold='nan')
 
 class HistogramEqualization(object):
-    'This class is responsible for apply the histogram equalization of an image'
+    'This class is responsible for apply the histogram equalization of an image - Distribute the intensity pixels evenly'
     def __init__(self, image):
-        self.originalImage = cv2.imread(image, 0)
+        self.originalImage = image
         self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
         self.M = len(self.originalImage)
         self.N = len(self.originalImage[0])
