@@ -86,3 +86,55 @@ class FourierTransform(object):
         imageBack = cv2.magnitude(imageBack[:,:,0],imageBack[:,:,1])
 
         return imageBack
+
+#Returning the image to the original size---------------------------------------
+
+    #TODO: Put the intensity pixels in 0..255
+    def __resizeImage(self, image):
+        transformedImage = np.zeros((self.M, self.N), dtype=np.float32)
+        for i in range(self.M):
+            for j in range(self.N):
+                value = image[i][j]
+                # if value > 255:
+                #     value = 255
+                #
+                # if value < 0:
+                #     value = 0
+
+                transformedImage[i][j] = value
+        #transformedImage = np.uint8(transformedImage)
+        return transformedImage
+
+#Opcional method to show results-----------------------------------------------
+
+    def __showResults(self, originalImage, imageBack, transformedImage):
+        plt.figure(1)
+        plt.subplot(131),plt.imshow(originalImage, cmap = 'gray')
+        plt.title('Input image '), plt.xticks([]), plt.yticks([])
+        plt.subplot(132),plt.imshow(imageBack, cmap = 'gray')
+        plt.title('Mask'), plt.xticks([]), plt.yticks([])
+        plt.subplot(133),plt.imshow(transformedImage, cmap = 'gray')
+        plt.title('Filter applied'), plt.xticks([]), plt.yticks([])
+        plt.show()
+
+#Main method------------------------------------------------------------------
+
+    def FourierTransform(self, filterChoice, delimiter, results=False):
+        distance = self.__distanceCalculation()
+        DFT = self.__dftCalculation(self.transformedImage)
+
+        if filterChoice == 0:
+            H = self.__createLowFilter(distance, delimiter)
+        else:
+            H = self.__createHighFilter(distance, delimiter)
+
+        filteredDft = self.__applyFilter(H, DFT)
+
+        imageBack = self.__inverseDft(filteredDft)
+
+        filteredImage = self.__resizeImage(imageBack)
+
+        if results == True:
+            self.__showResults(self.originalImage, imageBack, filteredImage)
+
+        return filteredImage
