@@ -76,28 +76,33 @@ class HistogramEqualization(object):
 
 #5º Step: Show the results------------------------------------------------------
 
-#Plot of the histogram of the transformed image
-histrTransformedImage = cv2.calcHist([transformedImage],[0],None,[256],[0,256])
-plt.plot(histrTransformedImage, color='red')
-plt.show()
+    def calculate(self):
+        histrOriginalImage = self.__normalize()
+        s = self.__makeTransformationFunction(histrOriginalImage)
+        self.__applyTransformation(s)
 
-#Plot of the transformation function
-fig2 = plt.figure(2)
-fig2.suptitle('Transformation function',fontsize=14, fontweight='bold')
-ax = fig2.add_subplot(111)
-ax.set_xlabel('x', fontweight='bold')
-ax.set_ylabel('y', fontweight='bold')
-plt.plot(s)
-plt.show()
+        #Plot of the histogram of the transformed image
+        histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
+        plt.plot(histrTransformedImage, color='red')
+        plt.show()
 
-#Opencv histogram equalization
-equOpencvImage = cv2.equalizeHist(originalImage)
+        #Plot of the transformation function
+        fig2 = plt.figure(2)
+        fig2.suptitle('Transformation function',fontsize=14, fontweight='bold')
+        ax = fig2.add_subplot(111)
+        ax.set_xlabel('x', fontweight='bold')
+        ax.set_ylabel('y', fontweight='bold')
+        plt.plot(s)
+        plt.show()
 
-#Showing the images
-#imageComparison = np.concatenate((originalImage, transformedImage), axis=0) #another way to compare images
-imageComparison = np.hstack((originalImage, transformedImage, equOpencvImage))
-cv2.imshow('Images Comparison: Original x My Hist Equ x Opencv Hist Equ ', imageComparison)
-cv2.waitKey(0)
+        #Opencv histogram equalization
+        equOpencvImage = cv2.equalizeHist(originalImage)
+
+        #Showing the images
+        #imageComparison = np.concatenate((originalImage, self.transformedImage), axis=0) #another way to compare images
+        imageComparison = np.hstack((originalImage, self.transformedImage, equOpencvImage))
+        cv2.imshow('Images Comparison: Original x My Hist Equ x Opencv Hist Equ ', imageComparison)
+        cv2.waitKey(0)
 
 #-------------------------------------------------------------------------------
 
