@@ -26,3 +26,13 @@ class FourierTransform(object):
                 image[i][j] = image[i][j] * (-1)**(i+j)
 
         return image
+
+#Distance calculation to create the filters-------------------------------------
+    def __distanceCalculation(self):
+
+        distance = np.zeros((self.P, self.Q), dtype=np.float32)
+        for i in range(self.P):
+            for j in range(self.Q):
+                distance[i][j] = math.sqrt( (i - self.P/2)**2 + (j - self.Q/2)**2 )
+
+        return distance
