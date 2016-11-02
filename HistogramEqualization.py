@@ -8,45 +8,23 @@ class HistogramEqualization(object):
     'This class is responsible for apply the histogram equalization of an image'
     def __init__(self, image):
         self.originalImage = cv2.imread(image, 0)
-        self.transformedImage = np.zeros(originalImage.shape, dtype=np.uint8)
+        self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
 
 #2º Step: Normalize-------------------------------------------------------------
-    def __normalize(self):
-        #calcHist(images, channels, mask, histSize, ranges[, hist[, accumulate]])
-        #The parameters are:
-        #images: Source images
-        #channels: Layers of RGB, 0 for  gray scale, 1 or 2 for R,G and B
-        #mask: If you want a histogram of a full image, pass none, else create a mask image for that and give it as mask
-        #histSize: Number of bits of the image
-        #range: Range used to calculate
-
-        #Plot of the histogram of the original image
-        histrOriginalImage = cv2.calcHist([self.originalImage],[0],None,[256],[0,256])
-
-        fig1 = plt.figure(1)
-        fig1.suptitle('Histogram Comparison', fontsize=14, fontweight='bold')
-
-        ax = fig1.add_subplot(1,1,1)
-        ax.set_xlabel('Input Intensity', fontweight='bold')
-        ax.set_ylabel('Output Intensity', fontweight='bold')
-
-        blue_patch = mpatches.Patch(color='blue', label='Original Histogram')
-        red_patch = mpatches.Patch(color='red', label='Transformed Histogram')
-
-        plt.legend(handles=[blue_patch, red_patch])
-        plt.plot(histrOriginalImage, color='blue')
+    def __normalizeHistogram(self, histogram):
 
         #Getting importants informations
+        normalizedHistogram = np.copy(histogram)
         N = len(self.originalImage)
         M = len(self.originalImage[0])
         totalPixels = N*M
-        histLen = len(histrOriginalImage)
+        histLen = len(normalizedHistogram)
 
         #Normalizing the histogram (The sum of the all elements will be 1)
         for i in range(histLen):
-            histrOriginalImage[i] = histrOriginalImage[i] / totalPixels
+            normalizedHistogram[i] = histogram[i] / totalPixels
 
-        return histrOriginalImage
+        return normalizedHistogram
 
 
 #3º Step: Create a transformation function--------------------------------------
@@ -66,6 +44,7 @@ class HistogramEqualization(object):
 
 #4º Step: Apply the transformation----------------------------------------------
     def __applyTransformation(self, s):
+
         N = len(self.originalImage)
         M = len(self.originalImage[0])
 
@@ -75,15 +54,23 @@ class HistogramEqualization(object):
                 self.transformedImage[i][j] = s[self.originalImage[i][j]]
 
 #5º Step: Show the results------------------------------------------------------
+    def __showResults(self, histrOriginalImage, histrTransformedImage, s):
 
-    def calculate(self):
-        histrOriginalImage = self.__normalize()
-        s = self.__makeTransformationFunction(histrOriginalImage)
-        self.__applyTransformation(s)
+        fig1 = plt.figure(1)
+        fig1.suptitle('Histogram Comparison', fontsize=14, fontweight='bold')
 
-        #Plot of the histogram of the transformed image
-        histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
+        ax = fig1.add_subplot(1,1,1)
+        ax.set_xlabel('Input Intensity', fontweight='bold')
+        ax.set_ylabel('Output Intensity', fontweight='bold')
+
+        blue_patch = mpatches.Patch(color='blue', label='Original Histogram')
+        red_patch = mpatches.Patch(color='red', label='Transformed Histogram')
+
+        plt.legend(handles=[blue_patch, red_patch])
+
+        plt.plot(histrOriginalImage, color='blue')
         plt.plot(histrTransformedImage, color='red')
+
         plt.show()
 
         #Plot of the transformation function
@@ -95,14 +82,38 @@ class HistogramEqualization(object):
         plt.plot(s)
         plt.show()
 
+    #Calculate the histogram. If results = true, will show the plots
+    def calculate(self, results=False):
+
+        #calcHist(images, channels, mask, histSize, ranges[, hist[, accumulate]])
+        #The parameters are:
+        #images: Source images
+        #channels: Layers of RGB, 0 for  gray scale, 1 or 2 for R,G and B
+        #mask: If you want a histogram of a full image, pass none, else create a mask image for that and give it as mask
+        #histSize: Number of bits of the image
+        #range: Range used to calculate
+        histrOriginalImage = cv2.calcHist([self.originalImage],[0],None,[256],[0,256])
+
+        normalizedHistrOriginalImage = self.__normalizeHistogram(histrOriginalImage)
+        s = self.__makeTransformationFunction(normalizedHistrOriginalImage)
+        self.__applyTransformation(s)
+
+        #Plot of the histogram of the transformed image
+        histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
+
+        if results == True:
+            self.__showResults(histrOriginalImage, histrTransformedImage, s)
+
         #Opencv histogram equalization
-        equOpencvImage = cv2.equalizeHist(originalImage)
+        equOpencvImage = cv2.equalizeHist(self.originalImage)
 
         #Showing the images
-        #imageComparison = np.concatenate((originalImage, self.transformedImage), axis=0) #another way to compare images
-        imageComparison = np.hstack((originalImage, self.transformedImage, equOpencvImage))
+        #imageComparison = np.concatenate((self.originalImage, self.transformedImage), axis=0) #another way to compare images
+        imageComparison = np.hstack((self.originalImage, self.transformedImage, equOpencvImage))
         cv2.imshow('Images Comparison: Original x My Hist Equ x Opencv Hist Equ ', imageComparison)
         cv2.waitKey(0)
+
+        return self.transformedImage
 
 #-------------------------------------------------------------------------------
 
