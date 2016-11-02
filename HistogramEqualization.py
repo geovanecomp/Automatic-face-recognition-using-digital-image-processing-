@@ -62,6 +62,8 @@ class HistogramEqualization(object):
         for i in range(initialValue, histLen):
             s[i] = np.rint( s[i-1] + (L - 1) * histogram[i] )
 
+        return s
+
 #4º Step: Apply the transformation----------------------------------------------
 
 for i in range(N):
