@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
+#To not abbreviate big matrices
+np.set_printoptions(threshold='nan')
+
 class HistogramEqualization(object):
     'This class is responsible for apply the histogram equalization of an image'
     def __init__(self, image):
@@ -111,8 +114,7 @@ class HistogramEqualization(object):
 
         return self.transformedImage
 
-#-------------------------------------------------------------------------------
-
+#Bonus: ------------------------------------------------------------------------
 #Otimization for histogram equalization
 # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
 # cl1 = clahe.apply(originalImage)
