@@ -36,3 +36,35 @@ class FourierTransform(object):
                 distance[i][j] = math.sqrt( (i - self.P/2)**2 + (j - self.Q/2)**2 )
 
         return distance
+#Creating the filters-----------------------------------------------------------
+    def __createHighFilter(self, distance, delimiter):
+        H = np.zeros((self.P, self.Q), dtype=np.float32)
+        for i in range(self.P):
+            for j in range(self.Q):
+
+                if distance[i][j] > delimiter:
+                    H[i][j] = 1
+
+        return H
+
+    def __createLowFilter(self, distance, delimiter):
+        H = np.zeros((self.P, self.Q), dtype=np.float32)
+        for i in range(self.P):
+            for j in range(self.Q):
+
+                if distance[i][j] < delimiter:
+                    H[i][j] = 1
+
+        return H
+
+#Applying the selected filter---------------------------------------------------
+
+    def __applyFilter(self, H, DFT):
+        #Opencv method for dft return 2 channels (real and imaginary)
+        filteredDft = np.zeros((self.P, self.Q, 2), dtype=np.float32)
+        for i in range(self.P):
+            for j in range(self.Q):
+                filteredDft[i][j][0] =  H[i][j]*DFT[i][j][0]
+                filteredDft[i][j][1] =  H[i][j]*DFT[i][j][1]
+
+        return filteredDft
