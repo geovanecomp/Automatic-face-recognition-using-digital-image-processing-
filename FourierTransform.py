@@ -68,3 +68,21 @@ class FourierTransform(object):
                 filteredDft[i][j][1] =  H[i][j]*DFT[i][j][1]
 
         return filteredDft
+
+#DFT calculation----------------------------------------------------------------
+    def __dftCalculation(self, image):
+
+        image = self.__centeringImage(image)
+
+        return cv2.dft(np.float32(image),flags = cv2.DFT_COMPLEX_OUTPUT)
+
+#Inverse DFT calculation--------------------------------------------------------
+
+    def __inverseDft(self, image):
+
+        #image = self.__centeringImage(image)
+        imageBack = cv2.idft(image)
+        imageBack = self.__centeringImage(imageBack)
+        imageBack = cv2.magnitude(imageBack[:,:,0],imageBack[:,:,1])
+
+        return imageBack
