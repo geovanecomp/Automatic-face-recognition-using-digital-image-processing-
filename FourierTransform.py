@@ -17,3 +17,12 @@ class FourierTransform(object):
         for i in range(self.M):
             for j in range(self.N):
                 self.transformedImage[i][j] = self.originalImage[i][j]
+
+#To move the information in the corners to the center in the frequency domain---
+    def __centeringImage(self, image):
+
+        for i in range(self.P):
+            for j in range(self.Q):
+                image[i][j] = image[i][j] * (-1)**(i+j)
+
+        return image
