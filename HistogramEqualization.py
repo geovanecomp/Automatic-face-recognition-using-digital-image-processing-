@@ -65,11 +65,14 @@ class HistogramEqualization(object):
         return s
 
 #4º Step: Apply the transformation----------------------------------------------
+    def applyTransformation(self, s):
+        N = len(self.originalImage)
+        M = len(self.originalImage[0])
 
-for i in range(N):
-    for j in range(M):
-        #Applying the transformation to the originalImage
-        transformedImage[i][j] = s[originalImage[i][j]]
+        for i in range(N):
+            for j in range(M):
+                #Applying the transformation to the originalImage
+                self.transformedImage[i][j] = s[self.originalImage[i][j]]        
 
 #5º Step: Show the results------------------------------------------------------
 
