@@ -5,7 +5,7 @@ if __name__ == '__main__':
     from HistogramEqualization import *
     from LaplacianFilter import *
 
-    image = cv2.imread('pout.tif', 0)
+    image = cv2.imread('Source/OthersImages/pout.tif', 0)
     initialTime = time.time()
 
     histogramEqualization = HistogramEqualization(image)
