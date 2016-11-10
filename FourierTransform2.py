@@ -7,23 +7,25 @@ import math
 #To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
 
-class FourierTransform(object):
+class FourierTransform2(object):
     def __init__(self, image):
         self.originalImage = np.float32(image)
-        self.M, self.N = np.shape(self.originalImage) #Number of lines and columns
+        self.M, self.N, self.O = self.originalImage.shape #Number of lines and columns
         self.P = 2 * self.M
         self.Q = 2 * self.N
-        self.transformedImage = np.zeros((self.P, self.Q), dtype=np.float32)
+        self.transformedImage = np.zeros((self.P, self.Q, self.O), dtype=np.float32)
         for i in range(self.M):
             for j in range(self.N):
-                self.transformedImage[i][j] = self.originalImage[i][j]
+                for k in range(self.O):
+                    self.transformedImage[i][j][k] = self.originalImage[i][j][k]
 
 #To move the information in the corners to the center in the frequency domain---
     def __centeringImage(self, image):
 
         for i in range(self.P):
             for j in range(self.Q):
-                image[i][j] = image[i][j] * (-1)**(i+j)
+                for k in range(self.O):
+                    image[i][j][k] = image[i][j][k] * (-1)**(i+j)
 
         return image
 
@@ -38,22 +40,22 @@ class FourierTransform(object):
         return distance
 #Creating the filters-----------------------------------------------------------
     def __createHighFilter(self, distance, delimiter):
-        H = np.zeros((self.P, self.Q), dtype=np.float32)
+        H = np.zeros((self.P, self.Q, self.O), dtype=np.float32)
         for i in range(self.P):
             for j in range(self.Q):
-
-                if distance[i][j] > delimiter:
-                    H[i][j] = 1
+                for k in range(self.O):
+                    if distance[i][j] > delimiter:
+                        H[i][j][k] = 1
 
         return H
 
     def __createLowFilter(self, distance, delimiter):
-        H = np.zeros((self.P, self.Q), dtype=np.float32)
+        H = np.zeros((self.P, self.Q, self.O), dtype=np.float32)
         for i in range(self.P):
             for j in range(self.Q):
-
-                if distance[i][j] < delimiter:
-                    H[i][j] = 1
+                for k in range(self.O):
+                    if distance[i][j] < delimiter:
+                        H[i][j][k] = 1
 
         return H
 
@@ -61,12 +63,14 @@ class FourierTransform(object):
 
     def __applyFilter(self, H, DFT):
         #Opencv method for dft return 2 channels (real and imaginary)
-        filteredDft = np.zeros((self.P, self.Q, 2), dtype=np.float32)
+        filteredDft = np.zeros((self.P, self.Q, self.O), dtype=np.float32)
         for i in range(self.P):
             for j in range(self.Q):
-                #filteredDft[i][j] =  H[i][j]*DFT[i][j]
-                filteredDft[i][j][0] =  H[i][j]*DFT[i][j][0]
-                filteredDft[i][j][1] =  H[i][j]*DFT[i][j][1]
+                for k in range(self.O):
+                    filteredDft[i][j][k] =  H[i][j][k]*DFT[i][j][k]
+
+                    #filteredDft[i][j][k][0] =  H[i][j][k]*DFT[i][j][0]
+                    #filteredDft[i][j][k][1] =  H[i][j][k]*DFT[i][j][1]
 
         return filteredDft
 
@@ -75,16 +79,18 @@ class FourierTransform(object):
 
         image = self.__centeringImage(image)
 
-        return cv2.dft(np.float32(image),flags = cv2.DFT_COMPLEX_OUTPUT)
+        #return cv2.dft(np.float32(image),flags = cv2.DFT_REAL_OUTPUT)
+        return np.fft.fft2(image)
 
 #Inverse DFT calculation--------------------------------------------------------
 
     def __inverseDft(self, image):
 
         #image = self.__centeringImage(image)
-        imageBack = cv2.idft(image)
+        #imageBack = cv2.idft(image)
+        #imageBack = cv2.magnitude(imageBack[:,:,:,0],imageBack[:,:,:,1])
+        imageBack = np.fft.ifft2(image)
         imageBack = self.__centeringImage(imageBack)
-        imageBack = cv2.magnitude(imageBack[:,:,0],imageBack[:,:,1])
 
         return imageBack
 
@@ -92,34 +98,42 @@ class FourierTransform(object):
 
     #TODO: Put the intensity pixels in 0..255
     def __resizeImage(self, image):
-        transformedImage = np.zeros((self.M, self.N), dtype=np.float32)
+        transformedImage = np.zeros((self.M, self.N, self.O), dtype=np.float32)
         bits32 = 2**32
         bits8 = 2**8
         for i in range(self.M):
             for j in range(self.N):
-                value = (image[i][j] / bits32) * bits8
-                #value = image[i][j] % 255
-                if value > 255:
-                    value = 255
+                for k in range(self.O):
+                    #value = (image[i][j][k] / bits32) * bits8
+                    value = image[i][j][k]
+                    #
+                    if value > 255:
+                        value = 255
 
-                if value < 0:
-                    value = 0
+                    if value < 0:
+                        value = 0
 
-                transformedImage[i][j] = value
+                    transformedImage[i][j][k] = value
         transformedImage = np.uint8(transformedImage)
+
         return transformedImage
 
 #Opcional method to show results-----------------------------------------------
 
-    def __showResults(self, originalImage, imageBack, transformedImage):
-        plt.figure(1)
-        plt.subplot(131),plt.imshow(originalImage, cmap = 'gray')
-        plt.title('Input image '), plt.xticks([]), plt.yticks([])
-        plt.subplot(132),plt.imshow(imageBack, cmap = 'gray')
-        plt.title('Mask'), plt.xticks([]), plt.yticks([])
-        plt.subplot(133),plt.imshow(transformedImage, cmap = 'gray')
-        plt.title('Filter applied'), plt.xticks([]), plt.yticks([])
-        plt.show()
+    def __showResults(self, originalImage, transformedImage):
+
+        transformedImage = np.uint8(transformedImage)
+        originalImage = np.uint8(originalImage)
+        # plt.figure(1)
+        # plt.subplot(111),plt.imshow(originalImage, cmap = 'gray')
+        # plt.title('Input image '), plt.xticks([]), plt.yticks([])
+        # plt.show()
+        # print originalImage.shape
+        # print imageBack.shape
+        # print transformedImage.shape
+        imageComparison = np.hstack((originalImage, transformedImage))
+        cv2.imshow('Images Comparison: Original x Filter applied', imageComparison)
+        cv2.waitKey(0)
 
 #Main method------------------------------------------------------------------
 
@@ -139,7 +153,7 @@ class FourierTransform(object):
         filteredImage = self.__resizeImage(imageBack)
 
         if results == True:
-            self.__showResults(self.originalImage, imageBack, filteredImage)
+            self.__showResults(self.originalImage, filteredImage)
 
         return filteredImage
 
@@ -151,16 +165,17 @@ class FourierTransform(object):
         print fourierFilter
         c = -1
 
-        for i in range(len(self.originalImage)):
-            for j in range(len(self.originalImage[0])):
-                value = self.originalImage[i][j] + c*fourierFilter[i][j]
-                if value < 0:
-                    value = 0
+        for i in range(self.originalImage.shape[0]):
+            for j in range(self.originalImage.shape[1]):
+                for k in range(self.originalImage.shape[2]):
+                    value = self.originalImage[i][j][k] + c*fourierFilter[i][j][k]
+                    if value < 0:
+                        value = 0
 
-                if value > 255:
-                    value = 255
+                    if value > 255:
+                        value = 255
 
-                transformedImage[i][j] = value
+                    transformedImage[i][j][k] = value
 
         #Converting the images to unsigned int 8 bits
         self.originalImage = np.uint8(self.originalImage)
