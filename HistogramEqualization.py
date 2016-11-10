@@ -12,8 +12,7 @@ class HistogramEqualization(object):
     def __init__(self, image):
         self.originalImage = image
         self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
-        self.M = len(self.originalImage)
-        self.N = len(self.originalImage[0])
+        self.M, self.N, self.O = self.originalImage.shape
 
 #1º Step: Normalize the original image's histogram------------------------------
     def __normalizeHistogram(self, histogram):
@@ -50,8 +49,9 @@ class HistogramEqualization(object):
 
         for i in range(self.M):
             for j in range(self.N):
-                #Applying the transformation to the originalImage
-                self.transformedImage[i][j] = s[self.originalImage[i][j]]
+                for k in range(self.O):
+                    #Applying the transformation to the originalImage
+                    self.transformedImage[i][j][k] = s[self.originalImage[i][j][k]]
 
 #Opcional Step: Show the results------------------------------------------------------
     def __showResults(self, histrOriginalImage, histrTransformedImage, s):
@@ -82,6 +82,10 @@ class HistogramEqualization(object):
         plt.plot(s)
         plt.show()
 
+        imageComparison = np.hstack((self.originalImage, self.transformedImage))
+        cv2.imshow('Images Comparison: Original x My Hist Equ', imageComparison)
+        cv2.waitKey(0)
+
 #Final Step --------------------------------------------------------------------
     #Calculate the histogram. If results = true, will show the plots
     def calculate(self, results=False):
@@ -93,24 +97,15 @@ class HistogramEqualization(object):
         #mask: If you want a histogram of a full image, pass none, else create a mask image for that and give it as mask
         #histSize: Number of bits of the image
         #range: Range used to calculate
-        histrOriginalImage = cv2.calcHist([self.originalImage],[0],None,[256],[0,256])
+        histrOriginalImage = cv2.calcHist([self.originalImage],[self.O - 1],None,[256],[0,256])
 
         normalizedHistrOriginalImage = self.__normalizeHistogram(histrOriginalImage)
         s = self.__makeTransformationFunction(normalizedHistrOriginalImage)
         self.__applyTransformation(s)
 
         if results == True:
-            histrTransformedImage = cv2.calcHist([self.transformedImage],[0],None,[256],[0,256])
+            histrTransformedImage = cv2.calcHist([self.transformedImage],[self.O - 1],None,[256],[0,256])
             self.__showResults(histrOriginalImage, histrTransformedImage, s)
-
-        #Opencv histogram equalization
-        equOpencvImage = cv2.equalizeHist(self.originalImage)
-
-        #Showing the images
-        #imageComparison = np.concatenate((self.originalImage, self.transformedImage), axis=0) #another way to compare images
-        imageComparison = np.hstack((self.originalImage, self.transformedImage, equOpencvImage))
-        cv2.imshow('Images Comparison: Original x My Hist Equ x Opencv Hist Equ ', imageComparison)
-        cv2.waitKey(0)
 
         return self.transformedImage
 
