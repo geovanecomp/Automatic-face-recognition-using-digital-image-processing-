@@ -10,8 +10,8 @@ class BruteForce(object):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
     def __init__(self, image1, image2):
-        self.image1 = image1
-        self.image2 = image2
+        self.image1 = np.float32(image1)
+        self.image2 = np.float32(image2)
 
         self.M, self.N, self.O = self.image1.shape
 
@@ -29,8 +29,51 @@ class BruteForce(object):
 
         average = sumOfElements / numberElements
 
-        print average, image.shape
-        return average, image.shape
+        return average
 
     def bruteForce(self):
-        self.__averageImage(self.image1)
+        avg1 = self.__averageImage(self.image1)
+        avg2 = self.__averageImage(self.image2)
+        A = self.image1
+        B = self.image2
+        print self.image1.shape, self.image2.shape
+
+#        correlationMatrix =np.zeros((self.M, self.N, self.O), dtype=np.float32)
+        # raise Exception("TEXTO")
+        numerator    = 0
+        denominator1 = 0
+        denominator2 = 0
+        for i in range(self.M):
+            for j in range(self.N):
+                for k in range(self.O):
+                    A = self.image1[i][j][k]
+                    B = self.image2[i][j][k]
+
+                    numerator    += (A - avg1) * (B - avg2)
+                    denominator1 += (A - avg1)**2
+                    denominator2 += (B - avg2)**2
+
+
+        correlation = numerator / (denominator1 * denominator2)**0.5
+
+        print "The images are " , correlation * 100, "% equals"
+        return correlation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #asdas

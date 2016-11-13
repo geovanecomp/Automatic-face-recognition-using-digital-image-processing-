@@ -27,10 +27,12 @@ if __name__ == '__main__':
     from LaplacianFilter import *
     from FourierTransform import *
     from FourierTransform2 import *
+    from BruteForce import *
 
     initialTime = time.time()
 
-    image = cv2.imread(URLOTHERS+'cameraman.tif')
+    image1 = cv2.imread(URLOTHERS+'game1.png')
+    image2 = cv2.imread(URLOTHERS+'game2.png')
     #image = grayScale(image)
 
     #Here is another way to convert to grayscale using opencv
@@ -39,11 +41,14 @@ if __name__ == '__main__':
     # histogramEqualization = HistogramEqualization(image)
     # equalizedImage = histogramEqualization.calculate(True)
 
-    laplacian = LaplacianFilter(image)
-    laplacian.laplacianFilter(True)
+    # laplacian = LaplacianFilter(image)
+    # laplacian.laplacianFilter(True)
 
     # fourier = FourierTransform(image)
     # fourier.fourierTransform(1, 50, True)
+
+    brute = BruteForce(image1, image2)
+    brute.bruteForce()
 
 
     print 'Past time:', time.time() - initialTime
