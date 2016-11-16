@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan')
 
 class BruteForce(object):
-    'This class will compare pixel by pixel the difference between the test image and the train images '
+    'This class will compare pixel by pixel the difference between two images'
 
     def __init__(self, image1, image2):
         self.image1 = np.float32(image1)
