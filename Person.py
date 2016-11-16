@@ -15,3 +15,4 @@ class Person(object):
         self.name = name
         self.images = images
         self.average = average
+ 
