@@ -24,6 +24,12 @@ class CompleteBruteForce(object):
         numberOfFolders = len(list(os.walk('Source/TrainDatabase'))) - 1;
         people = [None] * numberOfFolders
 
+        for i in range(numberOfFolders):
+
+            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+
+            images = [None] * len(files)
+
 
 
     def __averagePersonImage(self, image):
