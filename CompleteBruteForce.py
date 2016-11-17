@@ -30,6 +30,16 @@ class CompleteBruteForce(object):
 
             images = [None] * len(files)
 
+            for (j, file) in enumerate(files):
+                name, image = file.split('_')
+                images[j] = image
+
+            person = Person(directory=directory, name=name, images=images)
+            people[i] = person
+
+        # for person in people:
+        #     print person.getName(), person.getDirectory(), person.getImages(), person.getAverage()
+        return people
 
 
     def __averagePersonImage(self, image):
