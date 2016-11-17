@@ -34,6 +34,9 @@ class Person(object):
     def getImages(self):
         return self.__images
 
+    def addImage(self, image):
+        self.__images.append(image)
+
     def setAverage(self, average):
         self.__average = average
 
