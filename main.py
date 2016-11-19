@@ -2,9 +2,10 @@
 import time
 import cv2
 
-URLTEST     = 'Source/TestDatabase/'
-URLTRAIN    = 'Source/TrainDatabase/'
+URLTEST     = 'Source/Bernardo/TestDatabase/'
+URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
 URLOTHERS   = 'Source/OthersImages/'
+EXTENSION   = '.jpg'
 
 def grayScale(image):
     try:
@@ -28,6 +29,9 @@ if __name__ == '__main__':
     from FourierTransform import *
     from FourierTransform2 import *
     from BruteForce import *
+    from CompleteBruteForce import *
+    from Person import *
+
 
     initialTime = time.time()
 
@@ -47,8 +51,9 @@ if __name__ == '__main__':
     # fourier = FourierTransform(image)
     # fourier.fourierTransform(1, 50, True)
 
-    brute = BruteForce(image1, image2)
-    brute.bruteForce()
+    completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
+    foundPerson, percentage = completeBrute.bruteForce()
 
+    print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
 
     print 'Past time:', time.time() - initialTime

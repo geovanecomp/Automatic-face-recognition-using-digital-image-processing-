@@ -115,3 +115,51 @@ class CompleteBruteForce(object):
             #cv2.imwrite(os.path.join(person.getDirectory(), person.getName()+DELIMITER+AVERAGE+EXTENSION), avgMatrix)
 
         return avgMatrix
+
+#-------------------------------------------------------------------------------
+
+    #This method will be responsible to make the comparison between two people
+    def __correlation(self, testPerson, trainPerson):
+        A = testPerson
+        averageMatrixTrainPerson = self.__averageMatrix(trainPerson)
+
+        avg1 = testPerson.getAverage()
+        avg2 = trainPerson.getAverage()
+
+        numerator    = 0
+        denominator1 = 0
+        denominator2 = 0
+        for i in range(self.M):
+            for j in range(self.N):
+                for k in range(self.O):
+                    A = testPerson.getImages()[i][j][k]
+                    B = averageMatrixTrainPerson[i][j][k]
+
+                    numerator    += (A - avg1) * (B - avg2)
+                    denominator1 += (A - avg1)**2
+                    denominator2 += (B - avg2)**2
+
+
+        correlation = numerator / (denominator1 * denominator2)**0.5
+
+        print "TrainPerson: ", trainPerson.getName() ," The images are " , correlation * 100, "% equals"
+        return correlation
+
+#-------------------------------------------------------------------------------
+
+    #The main method
+    def bruteForce(self):
+        people = self.__getPeople()
+        people = self.__averagePersonImage(people)
+
+        foundPerson = None
+        maxCorrelation    = 0
+
+        results = np.zeros(len(people))
+        for (i, person) in enumerate(people):
+            results[i] = self.__correlation(self.personTest, person)
+            if results[i] > maxCorrelation:
+                foundPerson     = person
+                maxCorrelation  = results[i]
+
+        return foundPerson, maxCorrelation
