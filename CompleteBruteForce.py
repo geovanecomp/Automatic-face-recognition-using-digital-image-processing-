@@ -89,3 +89,29 @@ class CompleteBruteForce(object):
         return average
 
 #-------------------------------------------------------------------------------
+
+    #This method create an average matrix of a person to optimize the correlation
+    def __averageMatrix(self, person):
+
+        #TODO: If an old average image exists, must be deleted
+        # try:
+        #     os.remove(os.path.join(person.getDirectory(), person.getName()+DELIMITER+AVERAGE+EXTENSION))
+        # except:
+        #     pass
+
+        avgMatrix = np.zeros((self.M, self.N, self.O), dtype=np.float32)
+
+        for imageName in person.getImages():
+            imageUrl = person.getName()+DELIMITER+imageName
+            image = cv2.imread(person.getDirectory()+'/'+imageUrl)
+            for i in range(self.M):
+                for j in range(self.N):
+                    for k in range(self.O):
+                        avgMatrix[i][j][k] += image[i][j][k]
+
+            avgMatrix = avgMatrix / len(person.getImages())
+
+            #If I want to save the avgMatrix as image
+            #cv2.imwrite(os.path.join(person.getDirectory(), person.getName()+DELIMITER+AVERAGE+EXTENSION), avgMatrix)
+
+        return avgMatrix
