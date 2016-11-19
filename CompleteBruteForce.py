@@ -49,3 +49,43 @@ class CompleteBruteForce(object):
             people[i] = person
 
         return people
+
+#-------------------------------------------------------------------------------
+
+    #Every person has an average of all his images
+    def __averagePersonImage(self, people):
+
+        for person in people:
+            images = person.getImages()
+            average = 0.0
+            for imageName in images:
+                imageUrl = person.getName()+DELIMITER+imageName
+
+                image = cv2.imread(person.getDirectory()+'/'+imageUrl)
+
+                average += self.__averageImage(image)
+
+            average = average / float(len(images))
+            person.setAverage(average)
+
+        return people
+
+
+    #Calculate the average of one image
+    def __averageImage(self, image):
+        #Instead I could use np.average(image)
+        M, N, O = image.shape
+
+        sumOfElements = 0.0
+        numberElements = M*N*O
+
+        for i in range(M):
+            for j in range(N):
+                for k in range(O):
+                    sumOfElements += image[i][j][k]
+
+        average = sumOfElements / numberElements
+
+        return average
+
+#-------------------------------------------------------------------------------
