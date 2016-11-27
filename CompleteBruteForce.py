@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 
 from Person import *
+from Utils import *
 
 #To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
@@ -18,38 +19,28 @@ AVERAGE   = 'average'
 class CompleteBruteForce(object):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
-    def __init__(self, urlTestImage):
-        self.testImage = cv2.imread(urlTestImage)
-        self.testImage = np.float32(self.testImage)
-        avg = self.__averageImage(self.testImage)
-        self.personTest = Person(directory=urlTestImage, name='unknown', images=self.testImage, average=avg)
-        self.M, self.N, self.O = self.testImage.shape
+    def __init__(self, urlTestImage, channels=0):
+        self.__people = None
+        self.__channels = channels
+        self.__testImage = readImage(urlTestImage, self.__channels)
+        self.__testImage = np.float32(self.__testImage)
+        print self.__testImage.shape
+        try:
+            self.M, self.N, self.O = self.__testImage.shape
+        except:
+            self.M, self.N = self.__testImage.shape
+            self.O = 1
+            self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
 
-#-------------------------------------------------------------------------------
+        avg = self.__averageImage(self.__testImage)
+        self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage, average=avg)
 
-    #Get all people to compare
-    def __getPeople(self):
-        #Count the number of "people".
-        #-1 its because this function count the TrainDatabase too
-        numberOfFolders = len(list(os.walk(URLTRAIN))) - 1;
-        people = [None] * numberOfFolders
 
-        for i in range(numberOfFolders):
+    def setPeople(self, people):
+        self.__people = people
 
-            #Getting the url, folders and files
-            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
-
-            images = [None] * len(files)
-
-            for (j, file) in enumerate(files):
-                name, image = file.split(DELIMITER)
-                images[j] = image
-
-            person = Person(directory=directory, name=name, images=images)
-            people[i] = person
-
-        return people
-
+    def getPeople(self):
+        return self.__people
 #-------------------------------------------------------------------------------
 
     #Every person has an average of all his images
@@ -61,8 +52,7 @@ class CompleteBruteForce(object):
             for imageName in images:
                 imageUrl = person.getName()+DELIMITER+imageName
 
-                image = cv2.imread(person.getDirectory()+'/'+imageUrl)
-
+                image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
                 average += self.__averageImage(image)
 
             average = average / float(len(images))
@@ -74,14 +64,14 @@ class CompleteBruteForce(object):
     #Calculate the average of one image
     def __averageImage(self, image):
         #Instead I could use np.average(image)
-        M, N, O = image.shape
+        #self.M, self.N, self.O = image.shape
 
         sumOfElements = 0.0
-        numberElements = M*N*O
+        numberElements = self.M*self.N*self.O
 
-        for i in range(M):
-            for j in range(N):
-                for k in range(O):
+        for i in range(self.M):
+            for j in range(self.N):
+                for k in range(self.O):
                     sumOfElements += image[i][j][k]
 
         average = sumOfElements / numberElements
@@ -103,7 +93,8 @@ class CompleteBruteForce(object):
 
         for imageName in person.getImages():
             imageUrl = person.getName()+DELIMITER+imageName
-            image = cv2.imread(person.getDirectory()+'/'+imageUrl)
+            image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
+
             for i in range(self.M):
                 for j in range(self.N):
                     for k in range(self.O):
@@ -149,8 +140,7 @@ class CompleteBruteForce(object):
 
     #The main method
     def bruteForce(self):
-        people = self.__getPeople()
-        people = self.__averagePersonImage(people)
+        people = self.__averagePersonImage(self.__people)
 
         foundPerson = None
         maxCorrelation    = 0

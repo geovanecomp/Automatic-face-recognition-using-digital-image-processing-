@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 import time
 import cv2
+from Person import *
+from Utils import *
 
 URLTEST     = 'Source/Bernardo/TestDatabase/'
 URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
@@ -23,6 +25,30 @@ def grayScale(image):
         return image
 
 
+#Get all people to compare
+def getPeople():
+    #Count the number of "people".
+    #-1 its because this function count the TrainDatabase too
+    numberOfFolders = len(list(os.walk(URLTRAIN))) - 1;
+    people = [None] * numberOfFolders
+
+    for i in range(numberOfFolders):
+
+        #Getting the url, folders and files
+        directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+
+        images = [None] * len(files)
+
+        for (j, file) in enumerate(files):
+            name, image = file.split(DELIMITER)
+            images[j] = image
+
+        person = Person(directory=directory, name=name, images=images)
+        people[i] = person
+
+    return people
+
+
 if __name__ == '__main__':
     from HistogramEqualization import *
     from LaplacianFilter import *
@@ -30,13 +56,13 @@ if __name__ == '__main__':
     from FourierTransform2 import *
     from BruteForce import *
     from CompleteBruteForce import *
-    from Person import *
 
 
     initialTime = time.time()
+    people = getPeople()
 
-    image1 = cv2.imread(URLOTHERS+'game1.png')
-    image2 = cv2.imread(URLOTHERS+'game2.png')
+    # image1 = cv2.imread(URLOTHERS+'game1.png')
+    # image2 = cv2.imread(URLOTHERS+'game2.png')
     #image = grayScale(image)
 
     #Here is another way to convert to grayscale using opencv
@@ -52,6 +78,7 @@ if __name__ == '__main__':
     # fourier.fourierTransform(1, 50, True)
 
     completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
+    completeBrute.setPeople(getPeople())
     foundPerson, percentage = completeBrute.bruteForce()
 
     print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
