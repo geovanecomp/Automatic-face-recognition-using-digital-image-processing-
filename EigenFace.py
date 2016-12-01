@@ -73,6 +73,14 @@ def __removeMean(self, faces, averageVector):
 
     return newFaceMatrix
 
+def __covarianceMatrix(self, faces):
+    (M, N) = np.shape(faces)
+    covarianceMatrix = np.zeros((M,N), dtype=np.float32)
+    for i in range(M):
+        for j in range(N):
+            covarianceMatrix[i][j] = faces[i][j] * faces[j][i]
+
+    return covarianceMatrix
 
 #-------------------------------------------------------------------------------
 
