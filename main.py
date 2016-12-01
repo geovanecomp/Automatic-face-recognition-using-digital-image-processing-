@@ -56,6 +56,7 @@ if __name__ == '__main__':
     from FourierTransform2 import *
     from BruteForce import *
     from CompleteBruteForce import *
+    from EigenFace import *
 
 
     initialTime = time.time()
@@ -77,10 +78,13 @@ if __name__ == '__main__':
     # fourier = FourierTransform(image)
     # fourier.fourierTransform(1, 50, True)
 
-    completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
-    completeBrute.setPeople(getPeople())
-    foundPerson, percentage = completeBrute.bruteForce()
+    # completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
+    # completeBrute.setPeople(getPeople())
+    # foundPerson, percentage = completeBrute.bruteForce()
+    # print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
 
-    print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
+    eigenFace = EigenFace(urlTestImage=URLTEST+'10'+EXTENSION)
+    eigenFace.setPeople(people)
+    eigenFace.eigenFaceMethod()
 
     print 'Past time:', time.time() - initialTime
