@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import cv2
 import numpy as np
+from numpy import linalg as LA
 import matplotlib.pyplot as plt
 import os
 
@@ -81,6 +82,11 @@ class EigenFace(object):
 
         return covarianceMatrix
 
+    def __eigenVectorValue(self, matrix):
+        eigenValues, eigenVectors = LA.eig(matrix)
+
+        return eigenValues, eigenVectors
+
     #-------------------------------------------------------------------------------
 
     #The main method
@@ -90,3 +96,4 @@ class EigenFace(object):
         faces = self.__removeMean(faces, averageVector)
 
         covarianceMatrix = self.__covarianceMatrix(faces)
+        eigenValues, eigenVectors = self.__eigenVectorValue(covarianceMatrix)
