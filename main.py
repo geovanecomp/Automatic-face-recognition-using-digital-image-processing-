@@ -85,6 +85,6 @@ if __name__ == '__main__':
 
     eigenFace = EigenFace(urlTestImage=URLTEST+'10'+EXTENSION)
     eigenFace.setPeople(people)
-    eigenFace.eigenFaceMethod()
+    eigenFace.eigenFaceMethod(20)
 
     print 'Past time:', time.time() - initialTime

@@ -188,7 +188,7 @@ class EigenFace(object):
     #-------------------------------------------------------------------------------
 
     #The main method
-    def eigenFaceMethod(self, results=False):
+    def eigenFaceMethod(self, precision=100):
 
         if self.__eigenFaces == None:
 
@@ -198,7 +198,7 @@ class EigenFace(object):
 
             meanFaces = self.__removeMean(faces, averageVector)
 
-            self.__eigenFaces = self.getEigenFaces(meanFaces, 5)
+            self.__eigenFaces = self.getEigenFaces(meanFaces, precision)
 
         eigenTrainFaces = np.dot(self.__eigenFaces, meanFaces.transpose()) # 17x20
         eigenTrainFaces = eigenTrainFaces.transpose()
