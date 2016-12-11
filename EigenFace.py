@@ -25,7 +25,7 @@ class EigenFace(object):
         self.__channels = channels
         self.__testImage = readImage(urlTestImage, self.__channels)
         self.__testImage = np.float32(self.__testImage)
-        print self.__testImage.shape
+
         try:
             self.M, self.N, self.O = self.__testImage.shape
         except:
@@ -34,6 +34,7 @@ class EigenFace(object):
             self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
 
         self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage)
+        self.__eigenFaces = None
 
 
     def setPeople(self, people):
@@ -43,6 +44,7 @@ class EigenFace(object):
         return self.__people
 #-------------------------------------------------------------------------------
 
+    #Get the faces from database and append into a list to apply eigenfaces method
     def __getFacesMatrix(self, people):
         faces = []
         for person in people:
@@ -55,9 +57,12 @@ class EigenFace(object):
                 faces.append(image.flatten())
 
         return faces
+
+    #Make a vector with the mean of all columns
     def __averageVector(self, faces):
         (M, N) = np.shape(faces)
         average = np.zeros((N), dtype=np.float32)
+
         for j in range(N):
             for i in range(M):
                 average[j] += faces[i][j]
@@ -65,35 +70,23 @@ class EigenFace(object):
 
         return average
 
+    #Remove the mean of each face
     def __removeMean(self, faces, averageVector):
         (M, N) = np.shape(faces)
         newFaceMatrix = np.zeros((M,N), dtype=np.float32)
+
         for i in range(M):
             for j in range(N):
                 newFaceMatrix[i][j] = faces[i][j] - averageVector[j]
 
         return newFaceMatrix
 
+    #Or surrogate matrix
     def __covarianceMatrix(self, faces):
 
         facesT = faces.transpose()
+
         covarianceMatrix = np.dot(faces, facesT)
-        print covarianceMatrix.shape
+        (M, N) = np.shape(covarianceMatrix)
 
         return covarianceMatrix
-
-    def __eigenVectorValue(self, matrix):
-        eigenValues, eigenVectors = LA.eig(matrix)
-
-        return eigenValues, eigenVectors
-
-    #-------------------------------------------------------------------------------
-
-    #The main method
-    def eigenFaceMethod(self):
-        faces = self.__getFacesMatrix(self.__people)
-        averageVector = self.__averageVector(faces)
-        faces = self.__removeMean(faces, averageVector)
-
-        covarianceMatrix = self.__covarianceMatrix(faces)
-        eigenValues, eigenVectors = self.__eigenVectorValue(covarianceMatrix)
