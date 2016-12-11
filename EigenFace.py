@@ -90,3 +90,75 @@ class EigenFace(object):
         (M, N) = np.shape(covarianceMatrix)
 
         return covarianceMatrix
+
+
+    #Calculate the eigenValues and eigenVectors
+    def __eigenVectorValue(self, matrix):
+
+        eigenValues, eigenVectors = LA.eig(matrix)
+
+
+        #Plot of energy
+        fig1 = plt.figure(1)
+        fig1.suptitle('Principal Components', fontsize=14, fontweight='bold')
+
+        ax = fig1.add_subplot(1,1,1)
+        ax.set_xlabel('Eigen Value', fontweight='bold')
+        ax.set_ylabel('Energy', fontweight='bold')
+
+        # BAR
+        y_axis = eigenValues
+        x_axis = range(len(y_axis))
+        width_n = 0.4
+        bar_color = 'red'
+
+        plt.bar(x_axis, y_axis, width=width_n, color=bar_color)
+        plt.show()
+
+        return eigenValues, eigenVectors
+
+    #Method to compare the faces with the eigenfaces
+    def __compareImages(self, originalFaces, transformedFaces):
+        if len(transformedFaces) != len(originalFaces):
+            raise "The images sizes must be equal"
+
+        M = len(transformedFaces)
+        transformedFaceList = []
+        originalFaceList = []
+
+        for i in range(M):
+            transformedFace = transformedFaces[i][:].reshape(self.M, self.N, self.O)
+            transformedFace = correctMatrixValues(transformedFace)
+            transformedFaceList.append(transformedFace)
+
+            originalFace = originalFaces[i][:].reshape(self.M, self.N, self.O)
+            originalFace = correctMatrixValues(originalFace)
+            originalFaceList.append(originalFace)
+
+            cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('Image', 1200, 600)
+            imageComparison = np.hstack((originalFace, transformedFace))
+            cv2.imshow('Image', imageComparison)
+            cv2.waitKey(0)
+
+    #Get the eigenfaces with a precision 0~100%.
+    #With this precision I'll filter the principal components
+    def getEigenFaces(self, meanFaces, precision=None):
+        covarianceMatrix = self.__covarianceMatrix(meanFaces)
+        eigenValues, eigenVectors = self.__eigenVectorValue(covarianceMatrix)
+
+        if precision != None:
+
+            if precision > 100:
+                precision = 100
+            elif precision < 0:
+                precision = 0
+
+            precision = precision / 100.0
+            numberOfElements = int(precision * len(eigenVectors[0]))
+            eigenVectors = eigenVectors[:][0:numberOfElements]
+
+        eigenFaces = np.dot(eigenVectors, meanFaces)
+        return eigenFaces
+
+    
