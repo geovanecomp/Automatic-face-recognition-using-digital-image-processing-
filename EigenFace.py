@@ -161,4 +161,78 @@ class EigenFace(object):
         eigenFaces = np.dot(eigenVectors, meanFaces)
         return eigenFaces
 
-    
+    #With the minimum euclidian distance, I'll find the most closer person
+    def __euclideanDistance(self, v1, v2):
+
+        diffSquare = 0
+        for i in range(len(v1)):
+                diffSquare += (v1[i] - v2[i]) ** 2
+
+        euclideanDistance = diffSquare ** 0.5
+        return euclideanDistance
+        #return LA.norm(v1-v2)**2
+
+    def __applyEuclidianDistance(self, trainFaces, testFaces):
+
+        #The matrices must have same number of columns
+        numTestFaces = len(testFaces)
+        M,N = trainFaces.shape
+        euclideanDistance = np.zeros((numTestFaces, M), dtype=np.float32)
+
+        for i in range(numTestFaces):
+            for x in range(M):
+                    euclideanDistance[i][x] = self.__euclideanDistance(trainFaces[x][:], testFaces[i][:])
+
+        return euclideanDistance
+
+    #-------------------------------------------------------------------------------
+
+    #The main method
+    def eigenFaceMethod(self, results=False):
+
+        if self.__eigenFaces == None:
+
+            faces = self.__getFacesMatrix(self.__people)
+
+            averageVector = self.__averageVector(faces)
+
+            meanFaces = self.__removeMean(faces, averageVector)
+
+            self.__eigenFaces = self.getEigenFaces(meanFaces, 5)
+
+        eigenTrainFaces = np.dot(self.__eigenFaces, meanFaces.transpose()) # 17x20
+        eigenTrainFaces = eigenTrainFaces.transpose()
+
+
+        #Applying the same operation on testImage
+        testFaces = []
+
+        testFaces.append(self.__testImage.flatten())
+
+        meanTestFace = self.__removeMean(testFaces, averageVector)
+
+        eigenTestFaces = np.dot(self.__eigenFaces, meanTestFace.transpose())
+        eigenTestFaces = eigenTestFaces.transpose()
+
+        euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
+
+        for i in range(len(euclideanDistances)):
+            posMinValue = np.argmin(euclideanDistances[i][:])
+            print euclideanDistances
+            print "The min error was: ", euclideanDistances[i][posMinValue]
+            print 'The person found was... '
+
+            #Comparing the testImage X foundPerson
+            transformedFace = faces[posMinValue][:].reshape(self.M, self.N, self.O)
+            transformedFace = correctMatrixValues(transformedFace)
+
+            originalFace = testFaces[i][:].reshape(self.M, self.N, self.O)
+            originalFace = correctMatrixValues(originalFace)
+
+            cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('Image', 1200, 600)
+            imageComparison = np.hstack((originalFace, transformedFace))
+            cv2.imshow('Image', imageComparison)
+            cv2.waitKey(0)
+
+        return transformedFace
