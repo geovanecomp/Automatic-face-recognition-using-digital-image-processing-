@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
+import random
 import os
 
 from Person import *
@@ -12,29 +13,35 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+URLTRAIN  = 'Source/FEI/TrainDatabase/'
 EXTENSION = '.jpg'
-DELIMITER = '_'
+DELIMITER = '-'
 AVERAGE   = 'average'
 
 class EigenFace(object):
     'This class will extract the main components of a image using PCA '
 
-    def __init__(self, urlTestImage, channels=0):
+    def __init__(self, channels=0):
         self.__people = None
         self.__channels = channels
-        self.__testImage = readImage(urlTestImage, self.__channels)
-        self.__testImage = np.float32(self.__testImage)
-
-        try:
-            self.M, self.N, self.O = self.__testImage.shape
-        except:
-            self.M, self.N = self.__testImage.shape
-            self.O = 1
-            self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
-
-        self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage)
         self.__eigenFaces = None
+        # self.__testImage = readImage(urlTestImage, self.__channels)
+        # self.__testImage = np.float32(self.__testImage)
+        #
+        # try:
+        #     self.M, self.N, self.O = self.__testImage.shape
+        # except:
+        #     self.M, self.N = self.__testImage.shape
+        #     self.O = 1
+        #     self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
+        #
+        # self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage)
+
+
+    def setDimensions(M, N, O=1):
+        self.M = M
+        self.N = N
+        self.O = O
 
 
     def setPeople(self, people):
@@ -47,16 +54,34 @@ class EigenFace(object):
     #Get the faces from database and append into a list to apply eigenfaces method
     def __getFacesMatrix(self, people):
         faces = []
+        # print "AAAAAAA TAMANHO IMAGES: "
+        # print np.shape(readImage((people[0].getName()+DELIMITER+people[0].getImages()[0]))), np.shape(people)
         for person in people:
             images = person.getImages()
             average = 0.0
             for imageName in images:
                 imageUrl = person.getName()+DELIMITER+imageName
                 image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
-
+                self.M, self.N, self.O = image.shape
                 faces.append(image.flatten())
 
         return faces
+
+    #Select randomly a number of faces from train database to test
+    def getRandomFacesToTest(self, trainFaces, numberOfFaces=1):
+        (M, N) = np.shape(trainFaces)
+        facesToTest = np.zeros((numberOfFaces,N), dtype=np.float32)
+
+        for i in range(numberOfFaces):
+            randomPosition = int(random.random()*M)
+
+            facesToTest[i][:] = trainFaces[randomPosition][:]
+
+            #0 is for the axis 0 (row)
+            trainFaces = np.delete(trainFaces, randomPosition, 0)
+
+        return trainFaces, facesToTest
+
 
     #Make a vector with the mean of all columns
     def __averageVector(self, faces):
@@ -97,23 +122,22 @@ class EigenFace(object):
 
         eigenValues, eigenVectors = LA.eig(matrix)
 
-
-        #Plot of energy
-        fig1 = plt.figure(1)
-        fig1.suptitle('Principal Components', fontsize=14, fontweight='bold')
-
-        ax = fig1.add_subplot(1,1,1)
-        ax.set_xlabel('Eigen Value', fontweight='bold')
-        ax.set_ylabel('Energy', fontweight='bold')
-
-        # BAR
-        y_axis = eigenValues
-        x_axis = range(len(y_axis))
-        width_n = 0.4
-        bar_color = 'red'
-
-        plt.bar(x_axis, y_axis, width=width_n, color=bar_color)
-        plt.show()
+        # Plot of energy
+        # fig1 = plt.figure(1)
+        # fig1.suptitle('Principal Components', fontsize=14, fontweight='bold')
+        #
+        # ax = fig1.add_subplot(1,1,1)
+        # ax.set_xlabel('Eigen Value', fontweight='bold')
+        # ax.set_ylabel('Energy', fontweight='bold')
+        #
+        # # BAR
+        # y_axis = eigenValues
+        # x_axis = range(len(y_axis))
+        # width_n = 0.4
+        # bar_color = 'red'
+        #
+        # plt.bar(x_axis, y_axis, width=width_n, color=bar_color)
+        # plt.show()
 
         return eigenValues, eigenVectors
 
@@ -187,16 +211,34 @@ class EigenFace(object):
 
     #-------------------------------------------------------------------------------
 
+    def showResults(self, minError, originalFace, transformedFace):
+        print "The min error was: ", minError
+        print 'The person found was... '
+
+        transformedFace = transformedFace.reshape(self.M, self.N, self.O)
+        transformedFace = correctMatrixValues(transformedFace)
+
+        originalFace = originalFace.reshape(self.M, self.N, self.O)
+        originalFace = correctMatrixValues(originalFace)
+
+        cv2.namedWindow('Faces: TrainPerson x TestPerson',cv2.WINDOW_NORMAL)
+        cv2.resizeWindow('Faces: TrainPerson x TestPerson', 1200, 600)
+        imageComparison = np.hstack((originalFace, transformedFace))
+        cv2.imshow('Faces: TrainPerson x TestPerson', imageComparison)
+        cv2.waitKey(0)
+
+
     #The main method
-    def eigenFaceMethod(self, precision=100):
+    def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
+
+        trainFaces = self.__getFacesMatrix(self.__people)
+        trainFaces, testFaces = self.getRandomFacesToTest(trainFaces, quantityPeopleToTest)
 
         if self.__eigenFaces == None:
 
-            faces = self.__getFacesMatrix(self.__people)
+            averageVector = self.__averageVector(trainFaces)
 
-            averageVector = self.__averageVector(faces)
-
-            meanFaces = self.__removeMean(faces, averageVector)
+            meanFaces = self.__removeMean(trainFaces, averageVector)
 
             self.__eigenFaces = self.getEigenFaces(meanFaces, precision)
 
@@ -205,9 +247,9 @@ class EigenFace(object):
 
 
         #Applying the same operation on testImage
-        testFaces = []
+        # testFaces = []
 
-        testFaces.append(self.__testImage.flatten())
+        # testFaces.append(self.__testImage.flatten())
 
         meanTestFace = self.__removeMean(testFaces, averageVector)
 
@@ -215,24 +257,18 @@ class EigenFace(object):
         eigenTestFaces = eigenTestFaces.transpose()
 
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
-
+        transformedFaces = []
         for i in range(len(euclideanDistances)):
             posMinValue = np.argmin(euclideanDistances[i][:])
-            print euclideanDistances
-            print "The min error was: ", euclideanDistances[i][posMinValue]
-            print 'The person found was... '
+
 
             #Comparing the testImage X foundPerson
-            transformedFace = faces[posMinValue][:].reshape(self.M, self.N, self.O)
-            transformedFace = correctMatrixValues(transformedFace)
+            transformedFace = trainFaces[posMinValue][:]
+            originalFace = testFaces[i][:]
 
-            originalFace = testFaces[i][:].reshape(self.M, self.N, self.O)
-            originalFace = correctMatrixValues(originalFace)
+            if showResults == True:
+                self.showResults(euclideanDistances[i][posMinValue], originalFace, transformedFace)
 
-            cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('Image', 1200, 600)
-            imageComparison = np.hstack((originalFace, transformedFace))
-            cv2.imshow('Image', imageComparison)
-            cv2.waitKey(0)
+            transformedFaces.append(transformedFace)
 
-        return transformedFace
+        return transformedFaces

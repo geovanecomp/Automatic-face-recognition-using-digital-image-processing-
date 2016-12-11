@@ -3,9 +3,11 @@ import time
 import cv2
 from Person import *
 from Utils import *
+from os import *
 
-URLTEST     = 'Source/Bernardo/TestDatabase/'
-URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
+
+URLTEST     = 'Source/FEI/TestDatabase/'
+URLTRAIN    = 'Source/FEI/TrainDatabase/'
 URLOTHERS   = 'Source/OthersImages/'
 EXTENSION   = '.jpg'
 
@@ -25,14 +27,51 @@ def grayScale(image):
         return image
 
 
+# def getPeopleFEI():
+#     #Count the number of "people".
+#     #-1 its because this function count the TrainDatabase too
+#     files = sorted(os.listdir(URLTRAIN))
+#     imagesPerPerson = 14
+#     numberOfFiles = len(os.listdir(URLTRAIN))
+#     numberOfPeople = numberOfFiles / imagesPerPerson
+#     people = [None] * numberOfPeople
+#     images = []
+#
+#     for person in range(len(people)):
+#
+#
+#     for i in range(numberOfFiles):
+#
+#         name, image = files[i].split(DELIMITER)
+#         people[i] =
+#         images.append(image)
+#         #Getting the url, folders and files
+#         directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+#
+#         images = [None] * imagesPerPerson
+#
+#         for j in range(imagesPerPerson):
+#             pass
+#
+#         for (j, file) in enumerate(files):
+#             name, image = file.split(DELIMITER)
+#             images[j] = image
+#
+#         person = Person(directory=directory, name=name, images=images)
+#         people[i] = person
+#
+#     return people
+
 #Get all people to compare
-def getPeople():
+def getPeople(numberOfPeople=None):
+    if numberOfPeople == None:
+        numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
     #Count the number of "people".
     #-1 its because this function count the TrainDatabase too
-    numberOfFolders = len(list(os.walk(URLTRAIN))) - 1;
-    people = [None] * numberOfFolders
 
-    for i in range(numberOfFolders):
+    people = [None] * numberOfPeople
+
+    for i in range(numberOfPeople):
 
         #Getting the url, folders and files
         directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
@@ -60,8 +99,8 @@ if __name__ == '__main__':
 
 
     initialTime = time.time()
-    people = getPeople()
-
+    people = getPeople(30)
+    print "No main: ",people[0].getImages()[0]
     # image1 = cv2.imread(URLOTHERS+'game1.png')
     # image2 = cv2.imread(URLOTHERS+'game2.png')
     #image = grayScale(image)
@@ -83,8 +122,8 @@ if __name__ == '__main__':
     # foundPerson, percentage = completeBrute.bruteForce()
     # print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
 
-    eigenFace = EigenFace(urlTestImage=URLTEST+'10'+EXTENSION)
+    eigenFace = EigenFace()
     eigenFace.setPeople(people)
-    eigenFace.eigenFaceMethod(20)
+    eigenFace.eigenFaceMethod(10,100, True)
 
     print 'Past time:', time.time() - initialTime
