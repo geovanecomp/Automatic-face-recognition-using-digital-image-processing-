@@ -6,8 +6,8 @@ from Utils import *
 from os import *
 
 
-URLTEST     = 'Source/FEI/TestDatabase/'
-URLTRAIN    = 'Source/FEI/TrainDatabase/'
+# URLTEST     = 'Source/Bernardo/TestDatabase/'
+URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
 URLOTHERS   = 'Source/OthersImages/'
 EXTENSION   = '.jpg'
 
@@ -27,47 +27,11 @@ def grayScale(image):
         return image
 
 
-# def getPeopleFEI():
-#     #Count the number of "people".
-#     #-1 its because this function count the TrainDatabase too
-#     files = sorted(os.listdir(URLTRAIN))
-#     imagesPerPerson = 14
-#     numberOfFiles = len(os.listdir(URLTRAIN))
-#     numberOfPeople = numberOfFiles / imagesPerPerson
-#     people = [None] * numberOfPeople
-#     images = []
-#
-#     for person in range(len(people)):
-#
-#
-#     for i in range(numberOfFiles):
-#
-#         name, image = files[i].split(DELIMITER)
-#         people[i] =
-#         images.append(image)
-#         #Getting the url, folders and files
-#         directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
-#
-#         images = [None] * imagesPerPerson
-#
-#         for j in range(imagesPerPerson):
-#             pass
-#
-#         for (j, file) in enumerate(files):
-#             name, image = file.split(DELIMITER)
-#             images[j] = image
-#
-#         person = Person(directory=directory, name=name, images=images)
-#         people[i] = person
-#
-#     return people
-
 #Get all people to compare
 def getPeople(numberOfPeople=None):
     if numberOfPeople == None:
+        #-1 its because this function count the TrainDatabase too
         numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
-    #Count the number of "people".
-    #-1 its because this function count the TrainDatabase too
 
     people = [None] * numberOfPeople
 
@@ -99,8 +63,16 @@ if __name__ == '__main__':
 
 
     initialTime = time.time()
-    people = getPeople(30)
-    print "No main: ",people[0].getImages()[0]
+    people = getPeople(10)
+
+    eigenFace = EigenFace(channels=0)
+    eigenFace.setPeople(people)
+    eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+
+    print 'Past time:', time.time() - initialTime
+
+#Examples-----------------------------------------------------------------------
+
     # image1 = cv2.imread(URLOTHERS+'game1.png')
     # image2 = cv2.imread(URLOTHERS+'game2.png')
     #image = grayScale(image)
@@ -121,9 +93,3 @@ if __name__ == '__main__':
     # completeBrute.setPeople(getPeople())
     # foundPerson, percentage = completeBrute.bruteForce()
     # print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
-
-    eigenFace = EigenFace()
-    eigenFace.setPeople(people)
-    eigenFace.eigenFaceMethod(10,100, True)
-
-    print 'Past time:', time.time() - initialTime

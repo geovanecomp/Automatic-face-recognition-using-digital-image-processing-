@@ -13,9 +13,9 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/FEI/TrainDatabase/'
+URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
 EXTENSION = '.jpg'
-DELIMITER = '-'
+DELIMITER = '_'
 AVERAGE   = 'average'
 
 class EigenFace(object):
@@ -43,7 +43,6 @@ class EigenFace(object):
         self.N = N
         self.O = O
 
-
     def setPeople(self, people):
         self.__people = people
 
@@ -54,8 +53,7 @@ class EigenFace(object):
     #Get the faces from database and append into a list to apply eigenfaces method
     def __getFacesMatrix(self, people):
         faces = []
-        # print "AAAAAAA TAMANHO IMAGES: "
-        # print np.shape(readImage((people[0].getName()+DELIMITER+people[0].getImages()[0]))), np.shape(people)
+
         for person in people:
             images = person.getImages()
             average = 0.0
@@ -67,21 +65,48 @@ class EigenFace(object):
 
         return faces
 
-    #Select randomly a number of faces from train database to test
+#-------------------------------------------------------------------------------
+
+    #Select (and remove) randomly a number of faces from train database to test
     def getRandomFacesToTest(self, trainFaces, numberOfFaces=1):
+        numberOfFaces = 5
         (M, N) = np.shape(trainFaces)
         facesToTest = np.zeros((numberOfFaces,N), dtype=np.float32)
 
+        #Setting some faces to analyse results (Temporary)
+        # facesToTest[0][:] = trainFaces[0][:]
+        # trainFaces = np.delete(trainFaces, 0, 0)
+        #
+        # facesToTest[1][:] = trainFaces[5][:]
+        # trainFaces = np.delete(trainFaces, 5, 0)
+        #
+        # facesToTest[2][:] = trainFaces[10][:]
+        # trainFaces = np.delete(trainFaces, 10, 0)
+        #
+        # facesToTest[3][:] = trainFaces[15][:]
+        # trainFaces = np.delete(trainFaces, 15, 0)
+        #
+        # facesToTest[4][:] = trainFaces[20][:]
+        # trainFaces = np.delete(trainFaces, 20, 0)
+
+
         for i in range(numberOfFaces):
-            randomPosition = int(random.random()*M)
+
+            #The total size of trainFaces is inversely proportional to facesToTest
+            randomPosition = int(random.random()*(M-len(facesToTest)))
 
             facesToTest[i][:] = trainFaces[randomPosition][:]
 
             #0 is for the axis 0 (row)
             trainFaces = np.delete(trainFaces, randomPosition, 0)
 
+            #One face was removed from the matrix, so his length decrease too
+            numberOfFaces -= 1
+
+        print 'Dimensions of train and test matrix', np.shape(trainFaces), np.shape(facesToTest)
         return trainFaces, facesToTest
 
+#-------------------------------------------------------------------------------
 
     #Make a vector with the mean of all columns
     def __averageVector(self, faces):
@@ -91,9 +116,11 @@ class EigenFace(object):
         for j in range(N):
             for i in range(M):
                 average[j] += faces[i][j]
-            average[j] = average[j] / M
+            average[j] = average[j] / N
 
         return average
+
+#-------------------------------------------------------------------------------
 
     #Remove the mean of each face
     def __removeMean(self, faces, averageVector):
@@ -106,6 +133,8 @@ class EigenFace(object):
 
         return newFaceMatrix
 
+#-------------------------------------------------------------------------------
+
     #Or surrogate matrix
     def __covarianceMatrix(self, faces):
 
@@ -116,6 +145,7 @@ class EigenFace(object):
 
         return covarianceMatrix
 
+#-------------------------------------------------------------------------------
 
     #Calculate the eigenValues and eigenVectors
     def __eigenVectorValue(self, matrix):
@@ -141,6 +171,8 @@ class EigenFace(object):
 
         return eigenValues, eigenVectors
 
+#-------------------------------------------------------------------------------
+
     #Method to compare the faces with the eigenfaces
     def __compareImages(self, originalFaces, transformedFaces):
         if len(transformedFaces) != len(originalFaces):
@@ -165,6 +197,8 @@ class EigenFace(object):
             cv2.imshow('Image', imageComparison)
             cv2.waitKey(0)
 
+#-------------------------------------------------------------------------------
+
     #Get the eigenfaces with a precision 0~100%.
     #With this precision I'll filter the principal components
     def getEigenFaces(self, meanFaces, precision=None):
@@ -183,7 +217,10 @@ class EigenFace(object):
             eigenVectors = eigenVectors[:][0:numberOfElements]
 
         eigenFaces = np.dot(eigenVectors, meanFaces)
+
         return eigenFaces
+
+#-------------------------------------------------------------------------------
 
     #With the minimum euclidian distance, I'll find the most closer person
     def __euclideanDistance(self, v1, v2):
@@ -195,6 +232,7 @@ class EigenFace(object):
         euclideanDistance = diffSquare ** 0.5
         return euclideanDistance
         #return LA.norm(v1-v2)**2
+
 
     def __applyEuclidianDistance(self, trainFaces, testFaces):
 
@@ -209,7 +247,7 @@ class EigenFace(object):
 
         return euclideanDistance
 
-    #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
     def showResults(self, minError, originalFace, transformedFace):
         print "The min error was: ", minError
@@ -227,6 +265,7 @@ class EigenFace(object):
         cv2.imshow('Faces: TrainPerson x TestPerson', imageComparison)
         cv2.waitKey(0)
 
+#-------------------------------------------------------------------------------
 
     #The main method
     def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
@@ -245,7 +284,6 @@ class EigenFace(object):
         eigenTrainFaces = np.dot(self.__eigenFaces, meanFaces.transpose()) # 17x20
         eigenTrainFaces = eigenTrainFaces.transpose()
 
-
         #Applying the same operation on testImage
         # testFaces = []
 
@@ -258,9 +296,9 @@ class EigenFace(object):
 
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
         transformedFaces = []
+
         for i in range(len(euclideanDistances)):
             posMinValue = np.argmin(euclideanDistances[i][:])
-
 
             #Comparing the testImage X foundPerson
             transformedFace = trainFaces[posMinValue][:]
@@ -272,3 +310,5 @@ class EigenFace(object):
             transformedFaces.append(transformedFace)
 
         return transformedFaces
+
+    #-------------------------------------------------------------------------------
