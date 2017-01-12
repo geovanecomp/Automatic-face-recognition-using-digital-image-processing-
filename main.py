@@ -65,9 +65,9 @@ if __name__ == '__main__':
     initialTime = time.time()
     people = getPeople(10)
 
-    eigenFace = EigenFace(channels=0)
-    eigenFace.setPeople(people)
-    eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+    # eigenFace = EigenFace(channels=0)
+    # eigenFace.setPeople(people)
+    # eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
 
     print 'Past time:', time.time() - initialTime
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # fourier = FourierTransform(image)
     # fourier.fourierTransform(1, 50, True)
 
-    # completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
-    # completeBrute.setPeople(getPeople())
-    # foundPerson, percentage = completeBrute.bruteForce()
-    # print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
+    completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
+    completeBrute.setPeople(getPeople())
+    foundPerson, percentage = completeBrute.bruteForce()
+    print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
