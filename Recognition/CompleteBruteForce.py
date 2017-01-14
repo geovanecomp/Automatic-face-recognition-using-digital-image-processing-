@@ -175,6 +175,35 @@ class CompleteBruteForce(Recognizer):
         print "TrainPerson: ", trainPerson.getName() ," The images are " , correlation * 100, "% equals"
         return correlation
 
+#-------------------------------------------------------------------------------
+    def analyseResults(self, foundPerson, testPeople, maxCorrelations, threshold):
+        # Every person have the triple information:
+        # herself (testPeople[i]), foundPerson[i] with max correlation
+        # and the correlation[i] between herself and the foundPerson. The triple
+        # must have the same length.
+        if len(foundPerson) != len(testPeople) and len(testPeople) != len(maxCorrelations):
+            raise "The number of the vectors to compare are different"
+
+        # If threshold is in %, there must be converted to decimal value
+        if threshold > 1.0 :
+            threshold = threshold / 100.0
+
+        # If the correlation is lower than a specified value, the found person
+        # is wrong.
+        print 'TAMANHO DAS CORRELACOES', len(maxCorrelations)
+        for i in range(len(maxCorrelations)):
+            if maxCorrelations[i] < threshold:
+                print "The test person number ", i, " was not found (",maxCorrelations[i]*100,"% of accuracy)"
+
+            else:
+                testPeople[i].setName(foundPerson[i].getName())
+                print "The person found was: ", testPeople[i].getName(), "with ", maxCorrelations[i]*100, '% of accuracy'
+
+            compareImages((self.getImagePerson(foundPerson[i]), self.getImagePerson(testPeople[i])))
+
+        return testPeople
+
+#-------------------------------------------------------------------------------
 
     #The main method
     def bruteForce(self, numberOfPeopleToTest=3, threshold=60):
@@ -192,6 +221,8 @@ class CompleteBruteForce(Recognizer):
                 results[i][j] = self.__correlation(person, testPerson)
                 if results[i][j] > maxCorrelations[i]:
                     foundPerson[i]     = person
-                    maxCorrelations[i]  = results[i][j]        
+                    maxCorrelations[i]  = results[i][j]
+
+        testPeople = self.analyseResults(foundPerson, testPeople, maxCorrelations, threshold)
 
         return foundPerson, testPeople, maxCorrelations
