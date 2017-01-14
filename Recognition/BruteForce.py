@@ -58,22 +58,3 @@ class BruteForce(object):
 
         print "The images are " , correlation * 100, "% equals"
         return correlation
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #asdas

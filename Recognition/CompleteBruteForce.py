@@ -1,10 +1,9 @@
 # -*- coding: UTF-8 -*-
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 
-from Person import *
+from Recognizer import *
+from Person.CorrelationPerson import *
 from Utils import *
 
 #To not abbreviate big matrices
@@ -12,35 +11,74 @@ np.set_printoptions(threshold='nan')
 
 #Constants
 URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_160x120/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
 EXTENSION = '.jpg'
-DELIMITER = '_'
-AVERAGE   = 'average'
+DELIMITER = '-'
 
-class CompleteBruteForce(object):
+class CompleteBruteForce(Recognizer):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
-    def __init__(self, urlTestImage, channels=0):
-        self.__people = None
-        self.__channels = channels
-        self.__testImage = readImage(urlTestImage, self.__channels)
-        self.__testImage = np.float32(self.__testImage)
-        print self.__testImage.shape
-        try:
-            self.M, self.N, self.O = self.__testImage.shape
-        except:
-            self.M, self.N = self.__testImage.shape
-            self.O = 1
-            self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
+    def __init__(self, channels=0):
+        super(CompleteBruteForce, self).__init__(channels)
+        self.people = self.getPeople()
+        self.M, self.N, self.O = self.setDimensionsOfImage(self.people)
 
-        avg = self.__averageImage(self.__testImage)
-        self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage, average=avg)
+#-------------------------------------------------------------------------------
+
+    #Get all people to compare
+    def getPeople(self, numberOfPeople=None):
+        if numberOfPeople == None:
+            #-1 its because this function count the TrainDatabase too
+            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
+
+        people = [None] * numberOfPeople
+
+        for i in range(numberOfPeople):
+
+            #Getting the url, folders and files
+            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+
+            images = [None] * len(files)
+
+            for (j, file) in enumerate(files):
+                name, image = file.split(DELIMITER)
+                images[j] = image
+
+            person = CorrelationPerson(directory=directory, name=name, images=images)
+            people[i] = person
+
+        return people
+
+#-------------------------------------------------------------------------------
+
+    # Select (and remove) randomly a number of faces from train database to test
+    # It's important to know that need to remove an image from a person and NOT,
+    # the person from training database
+    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
+
+        testPeople = [None] * numberOfPeople
+
+        temporaryPerson = None
+        for i in range(numberOfPeople):
+
+            #The total size of trainPeople is inversely proportional to testPeople
+            randomPosition = int(random.random()*(M-len(testPeople)))
+
+            temporaryPerson = trainPeople[randomPosition]
+            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
+
+            testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
+                            images=[temporaryPerson.getImages()[randomImagePerson]],
+                            directory=temporaryPerson.getDirectory())
+
+            del(temporaryPerson.getImages()[randomImagePerson])
 
 
-    def setPeople(self, people):
-        self.__people = people
+        print 'Dimensions of train and test', np.shape(trainPeople), np.shape(testPeople)
+        return trainPeople, testPeople
 
-    def getPeople(self):
-        return self.__people
+
 #-------------------------------------------------------------------------------
 
     #Every person has an average of all his images
@@ -49,10 +87,11 @@ class CompleteBruteForce(object):
         for person in people:
             images = person.getImages()
             average = 0.0
+
             for imageName in images:
                 imageUrl = person.getName()+DELIMITER+imageName
 
-                image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
+                image = readImage(person.getDirectory()+'/'+imageUrl, self.channels)
                 average += self.__averageImage(image)
 
             average = average / float(len(images))
@@ -83,7 +122,7 @@ class CompleteBruteForce(object):
     #This method create an average matrix of a person to optimize the correlation
     def __averageMatrix(self, person):
 
-        #TODO: If an old average image exists, must be deleted
+        #TODO: If an old average image exists, that must be deleted
         # try:
         #     os.remove(os.path.join(person.getDirectory(), person.getName()+DELIMITER+AVERAGE+EXTENSION))
         # except:
@@ -93,7 +132,7 @@ class CompleteBruteForce(object):
 
         for imageName in person.getImages():
             imageUrl = person.getName()+DELIMITER+imageName
-            image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
+            image = readImage(person.getDirectory()+'/'+imageUrl, self.channels)
 
             for i in range(self.M):
                 for j in range(self.N):
@@ -110,9 +149,9 @@ class CompleteBruteForce(object):
 #-------------------------------------------------------------------------------
 
     #This method will be responsible to make the comparison between two people
-    def __correlation(self, testPerson, trainPerson):
-        A = testPerson
+    def __correlation(self, trainPerson, testPerson):
         averageMatrixTrainPerson = self.__averageMatrix(trainPerson)
+        averageMatrixTestPerson = self.__averageMatrix(testPerson)
 
         avg1 = testPerson.getAverage()
         avg2 = trainPerson.getAverage()
@@ -123,7 +162,7 @@ class CompleteBruteForce(object):
         for i in range(self.M):
             for j in range(self.N):
                 for k in range(self.O):
-                    A = testPerson.getImages()[i][j][k]
+                    A = averageMatrixTestPerson[i][j][k]
                     B = averageMatrixTrainPerson[i][j][k]
 
                     numerator    += (A - avg1) * (B - avg2)
@@ -136,20 +175,23 @@ class CompleteBruteForce(object):
         print "TrainPerson: ", trainPerson.getName() ," The images are " , correlation * 100, "% equals"
         return correlation
 
-#-------------------------------------------------------------------------------
 
     #The main method
-    def bruteForce(self):
-        people = self.__averagePersonImage(self.__people)
+    def bruteForce(self, numberOfPeopleToTest=3, threshold=60):
+        self.people, testPeople = self.__getRandomPeopleToTest(self.people, numberOfPeopleToTest)
 
-        foundPerson = None
-        maxCorrelation    = 0
+        people = self.__averagePersonImage(self.people)
+        testPeople = self.__averagePersonImage(testPeople)
 
-        results = np.zeros(len(people))
-        for (i, person) in enumerate(people):
-            results[i] = self.__correlation(self.personTest, person)
-            if results[i] > maxCorrelation:
-                foundPerson     = person
-                maxCorrelation  = results[i]
+        foundPerson = [None] * len(testPeople)
+        maxCorrelations = np.zeros(len(testPeople))
 
-        return foundPerson, maxCorrelation
+        results = np.zeros((len(testPeople), len(people)))
+        for (i, testPerson) in enumerate(testPeople):
+            for (j, person) in enumerate(people):
+                results[i][j] = self.__correlation(person, testPerson)
+                if results[i][j] > maxCorrelations[i]:
+                    foundPerson[i]     = person
+                    maxCorrelations[i]  = results[i][j]        
+
+        return foundPerson, testPeople, maxCorrelations
