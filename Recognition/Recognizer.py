@@ -50,3 +50,12 @@ class Recognizer(object):
         return image
 
 #-------------------------------------------------------------------------------
+
+    def getNumberOfFaces(self, people):
+        count = 0
+        for person in people:
+            count = len(person.getImages()) + count
+
+        return count
+
+#-------------------------------------------------------------------------------

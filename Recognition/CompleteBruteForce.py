@@ -95,7 +95,7 @@ class CompleteBruteForce(Recognizer):
         #     del(temporaryPerson.getImages()[randomImagePerson])
         #
 
-        print 'Dimensions of train and test', np.shape(trainPeople), np.shape(testPeople)
+        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
         return trainPeople, testPeople
 
 
