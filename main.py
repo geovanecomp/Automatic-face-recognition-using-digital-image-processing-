@@ -7,7 +7,8 @@ from os import *
 
 
 # URLTEST     = 'Source/Bernardo/TestDatabase/'
-URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
+URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
 URLOTHERS   = 'Source/OthersImages/'
 EXTENSION   = '.jpg'
 
@@ -28,42 +29,50 @@ def grayScale(image):
 
 
 #Get all people to compare
-def getPeople(numberOfPeople=None):
-    if numberOfPeople == None:
-        #-1 its because this function count the TrainDatabase too
-        numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
-
-    people = [None] * numberOfPeople
-
-    for i in range(numberOfPeople):
-
-        #Getting the url, folders and files
-        directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
-
-        images = [None] * len(files)
-
-        for (j, file) in enumerate(files):
-            name, image = file.split(DELIMITER)
-            images[j] = image
-
-        person = Person(directory=directory, name=name, images=images)
-        people[i] = person
-
-    return people
+# def getPeople(numberOfPeople=None):
+#     if numberOfPeople == None:
+#         #-1 its because this function count the TrainDatabase too
+#         numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
+#
+#     people = [None] * numberOfPeople
+#
+#     for i in range(numberOfPeople):
+#
+#         #Getting the url, folders and files
+#         directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+#
+#         images = [None] * len(files)
+#
+#         for (j, file) in enumerate(files):
+#             name, image = file.split(DELIMITER)
+#             images[j] = image
+#
+#         person = Person(directory=directory, name=name, images=images)
+#         people[i] = person
+#
+#     return people
 
 
 if __name__ == '__main__':
-    from HistogramEqualization import *
-    from LaplacianFilter import *
-    from FourierTransform import *
-    from FourierTransform2 import *
-    from BruteForce import *
-    from CompleteBruteForce import *
-    from EigenFace import *
+    # from HistogramEqualization import *
+    # from LaplacianFilter import *
+    # from FourierTransform import *
+    # from FourierTransform2 import *
+    # from BruteForce import *
+    # import Recognition.CompleteBruteForce
+    # from  import *
+    from Recognition.CompleteBruteForce import *
+    # from EigenFace import *
 
+    # print 'Escolha um método para o reconheicmento'
+    # choice = raw_input()
 
     initialTime = time.time()
-    people = getPeople(10)
+    # people = getPeople(10)
+
+    completeBrute = CompleteBruteForce()    
+    foundPerson, testPeople, percentage = completeBrute.bruteForce()
+
 
     # eigenFace = EigenFace(channels=0)
     # eigenFace.setPeople(people)
@@ -89,7 +98,7 @@ if __name__ == '__main__':
     # fourier = FourierTransform(image)
     # fourier.fourierTransform(1, 50, True)
 
-    completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
-    completeBrute.setPeople(getPeople())
-    foundPerson, percentage = completeBrute.bruteForce()
-    print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'
+    # completeBrute = CompleteBruteForce(urlTestImage=URLTEST+'10'+EXTENSION)
+    # completeBrute.setPeople(getPeople())
+    # foundPerson, percentage = completeBrute.bruteForce()
+    # print 'The person found was:', foundPerson.getName(), 'with ', percentage*100, '% of accuracy'

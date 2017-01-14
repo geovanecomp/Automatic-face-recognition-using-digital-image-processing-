@@ -14,8 +14,9 @@ np.set_printoptions(threshold='nan')
 
 #Constants
 URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
 EXTENSION = '.jpg'
-DELIMITER = '_'
+DELIMITER = '-'
 AVERAGE   = 'average'
 
 class EigenFace(object):

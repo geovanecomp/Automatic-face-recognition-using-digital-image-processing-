@@ -226,7 +226,7 @@ class CompleteBruteForce(Recognizer):
 #-------------------------------------------------------------------------------
 
     #The main method
-    def bruteForce(self, numberOfPeopleToTest=3, threshold=60):
+    def bruteForce(self, numberOfPeopleToTest=, threshold=60):
         self.people, testPeople = self.__getRandomPeopleToTest(self.people, numberOfPeopleToTest)
 
         people = self.__averagePersonImage(self.people)
