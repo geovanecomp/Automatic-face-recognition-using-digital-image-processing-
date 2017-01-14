@@ -52,28 +52,48 @@ class CompleteBruteForce(Recognizer):
 
 #-------------------------------------------------------------------------------
 
+    def __getFixedPeopleToTest(self, trainPeople, numberOfPeople=1):
+        testPeople = [None] * numberOfPeople
+
+        # Default index to get all fixed images
+        imgIndex = 0
+
+        for i in range(numberOfPeople):
+            testPeople[i] = CorrelationPerson(name=trainPeople[i].getName(),
+                            images=[trainPeople[i].getImages()[imgIndex]],
+                            directory=trainPeople[i].getDirectory())
+            del(trainPeople[i].getImages()[imgIndex])
+
+        return trainPeople, testPeople
+
+
+#-------------------------------------------------------------------------------
+
     # Select (and remove) randomly a number of faces from train database to test
     # It's important to know that need to remove an image from a person and NOT,
     # the person from training database
     def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
 
-        testPeople = [None] * numberOfPeople
+        # Setting some fixed faces to analyse results (Temporary - To TCC)
+        trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
 
-        temporaryPerson = None
-        for i in range(numberOfPeople):
-
-            #The total size of trainPeople is inversely proportional to testPeople
-            randomPosition = int(random.random()*(M-len(testPeople)))
-
-            temporaryPerson = trainPeople[randomPosition]
-            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
-
-            testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
-                            images=[temporaryPerson.getImages()[randomImagePerson]],
-                            directory=temporaryPerson.getDirectory())
-
-            del(temporaryPerson.getImages()[randomImagePerson])
-
+        # testPeople = [None] * numberOfPeople
+        #
+        # temporaryPerson = None
+        # for i in range(numberOfPeople):
+        #
+        #     #The total size of trainPeople is inversely proportional to testPeople
+        #     randomPosition = int(random.random()*(M-len(testPeople)))
+        #
+        #     temporaryPerson = trainPeople[randomPosition]
+        #     randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
+        #
+        #     testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
+        #                     images=[temporaryPerson.getImages()[randomImagePerson]],
+        #                     directory=temporaryPerson.getDirectory())
+        #
+        #     del(temporaryPerson.getImages()[randomImagePerson])
+        #
 
         print 'Dimensions of train and test', np.shape(trainPeople), np.shape(testPeople)
         return trainPeople, testPeople
