@@ -4,25 +4,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+from Person import *
+
 #To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
 
-class CorrelationPerson(object):
+class CorrelationPerson(Person):
     'This class represents one person with the requirements for correlation method'
 
-    def __init__(self, directory, name, images, average=None):
-        super(CorrelationPerson, self).__init__(directory, name)
+    def __init__(self, name, images, directory, average=None):
+        super(CorrelationPerson, self).__init__(name, images,  directory)
         self.__images = images
         self.__average = average
-
-    def setImages(self, images):
-        self.__images = images
-
-    def getImages(self):
-        return self.__images
-
-    def addImage(self, image):
-        self.__images.append(image)
 
     def setAverage(self, average):
         self.__average = average

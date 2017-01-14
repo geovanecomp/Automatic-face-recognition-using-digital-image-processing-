@@ -1,23 +1,11 @@
 # -*- coding: UTF-8 -*-
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
+
 import random
-import os
-from numpy import linalg as LA
 from abc import ABCMeta, abstractmethod
-from Person import *
 from Utils import *
 
-
-#To not abbreviate big matrices
-np.set_printoptions(threshold='nan')
-
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-EXTENSION = '.jpg'
 DELIMITER = '-'
-AVERAGE   = 'average'
 
 class Recognizer(object):
     __metaclass__ = ABCMeta

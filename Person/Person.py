@@ -10,17 +10,10 @@ np.set_printoptions(threshold='nan')
 class Person(object):
     'This class represents a generic person'
 
-    def __init__(self, directory, name, images, average=None):
-        self.__directory = directory
+    def __init__(self, name, images, directory):
         self.__name = name
         self.__images = images
-        self.__average = average
-
-    def setDirectory(self, directory):
         self.__directory = directory
-
-    def getDirectory(self):
-        return self.__directory
 
     def setName(self, name):
         self.__name = name
@@ -37,8 +30,8 @@ class Person(object):
     def addImage(self, image):
         self.__images.append(image)
 
-    def setAverage(self, average):
-        self.__average = average
+    def setDirectory(self, directory):
+        self.__directory = directory
 
-    def getAverage(self):
-        return self.__average
+    def getDirectory(self):
+        return self.__directory

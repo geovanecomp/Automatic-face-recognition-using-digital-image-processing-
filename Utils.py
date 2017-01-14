@@ -2,12 +2,18 @@ import cv2
 import numpy as np
 
 def readImage(urlImage, channels=3):
-    image = cv2.imread(urlImage, channels)
+    try:
+        image = cv2.imread(urlImage, channels)
+    except Exception as e:
+        raise 'Image not found'
+
     if channels == 0:
         M, N = image.shape
         O = 1
         return image.reshape((M,N,O))
     return image
+
+#-------------------------------------------------------------------------------
 
 #Transform all values bigger than max value (and min) to be equal max value (and min)
 def correctMatrixValues(matrix, maxValue=255, minValue=0):
@@ -34,6 +40,7 @@ def correctMatrixValues(matrix, maxValue=255, minValue=0):
 
     return matrix
 
+#-------------------------------------------------------------------------------
 
 def showImage(image):
 
@@ -42,4 +49,13 @@ def showImage(image):
     cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Image', 1200, 600)
     cv2.imshow('Image', image)
+    cv2.waitKey(0)
+
+#-------------------------------------------------------------------------------
+
+def compareImages(images):
+    cv2.namedWindow('Comparison between images',cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Comparison between images', 1200, 600)
+    imageComparison = np.hstack(images)
+    cv2.imshow('Comparison between images', imageComparison)
     cv2.waitKey(0)
