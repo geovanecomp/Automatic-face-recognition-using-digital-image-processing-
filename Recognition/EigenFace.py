@@ -13,9 +13,9 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
 # URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
@@ -71,29 +71,32 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
+    def __getFixedPeopleToTest(self, trainPeople, numberOfPeople=1):
+        # testPeople = [None] * numberOfPeople
+        testPeople = []
+        # Default index to get all fixed images
+        imgIndex = 0
+
+        for i in range(numberOfPeople):
+
+            testPeople.append(EigenPerson(name=trainPeople[i].getName(),
+                            images=[trainPeople[i].getImages()[imgIndex]],
+                            directory=trainPeople[i].getDirectory()))
+
+            del(trainPeople[i].getImages()[imgIndex])
+
+
+        return trainPeople, testPeople
+
+#-------------------------------------------------------------------------------
+
     #Select (and remove) randomly a number of faces from train database to test
     def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
+
+        # Setting some fixed faces to analyse results (Temporary - To TCC)
+        # trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
+
         M = len(trainPeople)
-        # (M, N) = np.shape(trainFaces)
-        # facesToTest = np.zeros((numberOfFaces,N), dtype=np.float32)
-
-        #Setting some faces to analyse results (Temporary)
-        # facesToTest[0][:] = trainFaces[0][:]
-        # trainFaces = np.delete(trainFaces, 0, 0)
-        #
-        # facesToTest[1][:] = trainFaces[5][:]
-        # trainFaces = np.delete(trainFaces, 5, 0)
-        #
-        # facesToTest[2][:] = trainFaces[10][:]
-        # trainFaces = np.delete(trainFaces, 10, 0)
-        #
-        # facesToTest[3][:] = trainFaces[15][:]
-        # trainFaces = np.delete(trainFaces, 15, 0)
-        #
-        # facesToTest[4][:] = trainFaces[20][:]
-        # trainFaces = np.delete(trainFaces, 20, 0)
-
-        # testPeople = [None] * numberOfPeople
         testPeople = []
         temporaryPerson = None
 
@@ -114,16 +117,6 @@ class EigenFace(Recognizer):
 
             del(temporaryPerson.getImages()[randomImagePerson])
 
-            # #The total size of trainFaces is inversely proportional to facesToTest
-            # randomPosition = int(random.random()*(M-len(facesToTest)))
-            #
-            # facesToTest[i][:] = trainFaces[randomPosition][:]
-            #
-            # #0 is for the axis 0 (row)
-            # trainFaces = np.delete(trainFaces, randomPosition, 0)
-            #
-            # #One face was removed from the matrix, so his length decrease too
-            # numberOfFaces -= 1
         print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
         return trainPeople, testPeople
 
