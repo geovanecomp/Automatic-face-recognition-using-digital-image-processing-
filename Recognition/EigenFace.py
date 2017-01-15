@@ -129,8 +129,9 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
-    # The names of people must be unique
+    # Find a person by name in a set of people
     def __findPersonByName(self, people, name):
+        # The names of people must be unique
         for person in people:
             if person.getName() == name:
                 return person
@@ -138,6 +139,8 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
+    # With the map it's possible recover the face on the matrix of faces and
+    # allocate to respective person
     def __getPersonByRowMatrix(self, people, row):
         for personMap in self.__peopleMap:
             for face in self.__peopleMap[personMap]:
@@ -145,7 +148,9 @@ class EigenFace(Recognizer):
                     return self.__findPersonByName(people, personMap)
 
 #-------------------------------------------------------------------------------
-
+    # The eigenFace method must use matrix of faces, but I want to recover these
+    # faces to get informations of the person found, so it's necessary map each
+    # each person to your respective faces
     def __mapMatrixToPerson(self, initialIndex, finalIndex):
         faceVector = []
         for i in range(initialIndex, finalIndex):
@@ -155,6 +160,8 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
+    # Transforming the faces of each person on the matrix of faces.
+    # In the case of training people, it is necessary to map them
     def __makeTrainFacesMatrix(self, people):
         faces = people[0].getFacesMatrix()
 
@@ -172,6 +179,7 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
+    # Transforming the faces of each person on the matrix of faces.
     def __makeTestFacesMatrix(self, people):
         faces = people[0].getFacesMatrix()
         for i in range(1, len(people)):
@@ -243,32 +251,6 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
-    #Method to compare the faces with the eigenfaces
-    def __compareImages(self, originalFaces, foundPeople):
-        if len(foundPeople) != len(originalFaces):
-            raise "The images sizes must be equal"
-
-        M = len(foundPeople)
-        foundPersonList = []
-        originalFaceList = []
-
-        for i in range(M):
-            foundPerson = foundPeople[i][:].reshape(self.M, self.N, self.O)
-            foundPerson = correctMatrixValues(foundPerson)
-            foundPersonList.append(foundPerson)
-
-            originalFace = originalFaces[i][:].reshape(self.M, self.N, self.O)
-            originalFace = correctMatrixValues(originalFace)
-            originalFaceList.append(originalFace)
-
-            cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('Image', 1200, 600)
-            imageComparison = np.hstack((originalFace, foundPerson))
-            cv2.imshow('Image', imageComparison)
-            cv2.waitKey(0)
-
-#-------------------------------------------------------------------------------
-
     #Get the eigenfaces with a precision 0~100%.
     #With this precision I'll filter the principal components
     def getEigenFaces(self, meanFaces, precision=None):
@@ -319,25 +301,6 @@ class EigenFace(Recognizer):
 
 #-------------------------------------------------------------------------------
 
-    def showResults(self, minError, originalFace, foundPerson):
-        print "The min error was: ", minError
-        print 'The person found was... '
-
-        foundPerson = foundPerson.reshape(self.M, self.N, self.O)
-        foundPerson = correctMatrixValues(foundPerson)
-
-        originalFace = originalFace.reshape(self.M, self.N, self.O)
-        originalFace = correctMatrixValues(originalFace)
-
-        cv2.namedWindow('Faces: TrainPerson x TestPerson',cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Faces: TrainPerson x TestPerson', 1200, 600)
-        imageComparison = np.hstack((originalFace, foundPerson))
-        cv2.imshow('Faces: TrainPerson x TestPerson', imageComparison)
-        cv2.waitKey(0)
-
-
-#-------------------------------------------------------------------------------
-
     #The main method
     def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
 
@@ -375,12 +338,10 @@ class EigenFace(Recognizer):
             originalFace = testFaces[i][:]
             foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
             if showResults == True:
-                self.showResults(euclideanDistances[i][posMinValue], originalFace, foundPerson)
+                print 'The found person was: ', foundPerson.getName()
+                compareImages((self.getImagePerson(foundPerson), self.getImagePerson(testPeople[i])))
 
-            # print 'Pessoa encontrada: ', foundPerson.getName()
             foundPeople.append(foundPerson)
-            # compareImages((self.getImagePerson(foundPerson), self.getImagePerson(testPeople[i])))
-
 
         return foundPeople, testFaces
 
