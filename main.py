@@ -62,21 +62,19 @@ if __name__ == '__main__':
     # import Recognition.CompleteBruteForce
     # from  import *
     from Recognition.CompleteBruteForce import *
-    # from EigenFace import *
+    from Recognition.EigenFace import *
 
     # print 'Escolha um método para o reconheicmento'
     # choice = raw_input()
 
     initialTime = time.time()
-    # people = getPeople(10)
 
-    completeBrute = CompleteBruteForce()    
-    foundPerson, testPeople, percentage = completeBrute.bruteForce()
+    # CORRELATION METHOD
+    # completeBrute = CompleteBruteForce()
+    # foundPerson, testPeople, percentage = completeBrute.bruteForce()
 
-
-    # eigenFace = EigenFace(channels=0)
-    # eigenFace.setPeople(people)
-    # eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+    eigenFace = EigenFace(quantityPeopleToTrain=10, channels=0)
+    foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=2,precision=50, showResults=True)
 
     print 'Past time:', time.time() - initialTime
 

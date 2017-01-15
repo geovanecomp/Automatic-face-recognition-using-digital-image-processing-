@@ -4,24 +4,37 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-#To not abbreviate big matrices
-np.set_printoptions(threshold='nan')
+from Person import *
+from Utils import *
+
+DELIMITER = '-'
 
 class EigenPerson(Person):
     'This class represents one person with the requirements to eigenface method'
 
-    def __init__(self, directory, name):
-        super(EigenPerson, self).__init__(directory, name)
-        self.__images = images
+    def __init__(self, name, images, directory):
+        super(EigenPerson, self).__init__(name, images, directory)
+        self.__facesMatrix = []
 
+    def setFacesMatrix(self, channels):
 
-    def setImages(self, images):
-        self.__images = images
+        for imageName in self.getImages():
+            imageUrl = self.getName()+DELIMITER+imageName
+            image = readImage(self.getDirectory()+'/'+imageUrl, channels)
+            self.__facesMatrix.append(image.flatten())
 
-    def getImages(self):
-        return self.__images
+        # print '----------------- Tamanho da faceMatrix da pessoa:', self.getName(), ': ', np.shape(self.__facesMatrix)
 
-    def addImage(self, image):
-        self.__images.append(image)
+    def getFacesMatrix(self):
+        return self.__facesMatrix
 
-    
+    def getFacesMatrixDimensions(self):
+        return np.shape(self.__facesMatrix)
+
+    def getAverageFacesMatrix(self, average):
+        (M, N) = self.__facesMatrix.shape
+        # average = np.zeros((N), dtype=np.float32)
+        for j in range(N):
+            for i in range(M):
+                average[j] += faces[i][j]
+            average[j] = average[j] / N

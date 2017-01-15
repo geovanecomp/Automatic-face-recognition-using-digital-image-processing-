@@ -45,7 +45,7 @@ class CompleteBruteForce(Recognizer):
                 name, image = file.split(DELIMITER)
                 images[j] = image
 
-            person = CorrelationPerson(directory=directory, name=name, images=images)
+            person = CorrelationPerson(name=name, images=images, directory=directory)
             people[i] = person
 
         return people
@@ -74,26 +74,28 @@ class CompleteBruteForce(Recognizer):
     # the person from training database
     def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
 
-        # Setting some fixed faces to analyse results (Temporary - To TCC)
-        trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
+        M = len(trainPeople)
 
-        # testPeople = [None] * numberOfPeople
-        #
-        # temporaryPerson = None
-        # for i in range(numberOfPeople):
-        #
-        #     #The total size of trainPeople is inversely proportional to testPeople
-        #     randomPosition = int(random.random()*(M-len(testPeople)))
-        #
-        #     temporaryPerson = trainPeople[randomPosition]
-        #     randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
-        #
-        #     testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
-        #                     images=[temporaryPerson.getImages()[randomImagePerson]],
-        #                     directory=temporaryPerson.getDirectory())
-        #
-        #     del(temporaryPerson.getImages()[randomImagePerson])
-        #
+        # Setting some fixed faces to analyse results (Temporary - To TCC)
+        # trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
+
+        testPeople = [None] * numberOfPeople
+
+        temporaryPerson = None
+        for i in range(numberOfPeople):
+
+            #The total size of trainPeople is inversely proportional to testPeople
+            randomPosition = int(random.random()*(M-len(testPeople)))
+
+            temporaryPerson = trainPeople[randomPosition]
+            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
+
+            testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
+                            images=[temporaryPerson.getImages()[randomImagePerson]],
+                            directory=temporaryPerson.getDirectory())
+
+            del(temporaryPerson.getImages()[randomImagePerson])
+
 
         print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
         return trainPeople, testPeople
@@ -226,7 +228,7 @@ class CompleteBruteForce(Recognizer):
 #-------------------------------------------------------------------------------
 
     #The main method
-    def bruteForce(self, numberOfPeopleToTest=, threshold=60):
+    def bruteForce(self, numberOfPeopleToTest=1, threshold=60):
         self.people, testPeople = self.__getRandomPeopleToTest(self.people, numberOfPeopleToTest)
 
         people = self.__averagePersonImage(self.people)

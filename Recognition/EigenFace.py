@@ -3,76 +3,79 @@ import cv2
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
-import random
 import os
 
-from Person import *
+from Recognizer import *
+from Person.EigenPerson import *
 from Utils import *
 
 #To not abbreviate big matrices
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
 # URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
+URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
 
-class EigenFace(object):
+class EigenFace(Recognizer):
     'This class will extract the main components of a image using PCA '
 
-    def __init__(self, channels=0):
-        self.__people = None
-        self.__channels = channels
+    def __init__(self, quantityPeopleToTrain=None, channels=0):
+        super(EigenFace, self).__init__(channels)
+        self.people = self.getPeople(quantityPeopleToTrain)
+        self.M, self.N, self.O = self.setDimensionsOfImage(self.people)
         self.__eigenFaces = None
-        # self.__testImage = readImage(urlTestImage, self.__channels)
-        # self.__testImage = np.float32(self.__testImage)
-        #
-        # try:
-        #     self.M, self.N, self.O = self.__testImage.shape
-        # except:
-        #     self.M, self.N = self.__testImage.shape
-        #     self.O = 1
-        #     self.__testImage = self.__testImage.reshape((self.M,self.N,self.O))
-        #
-        # self.personTest = Person(directory=urlTestImage, name='unknown', images=self.__testImage)
 
-
-    def setDimensions(M, N, O=1):
-        self.M = M
-        self.N = N
-        self.O = O
+        #I'll use a dictionary to map people to your faces on matrix of faces
+        self.__peopleMap = {}
 
     def setPeople(self, people):
-        self.__people = people
+        self.people = people
 
-    def getPeople(self):
-        return self.__people
 #-------------------------------------------------------------------------------
 
-    #Get the faces from database and append into a list to apply eigenfaces method
-    def __getFacesMatrix(self, people):
-        faces = []
+    def getPeople(self, numberOfPeople=None):
+        if numberOfPeople == None:
+            #-1 its because this function count the TrainDatabase too
+            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
 
+        people = [None] * numberOfPeople
+
+        for i in range(numberOfPeople):
+
+            #Getting the url, folders and files
+            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+
+            images = [None] * len(files)
+
+            for (j, file) in enumerate(files):
+                name, image = file.split(DELIMITER)
+                images[j] = image
+
+            person = EigenPerson(name=name, images=images, directory=directory)
+            people[i] = person
+
+        return people
+#-------------------------------------------------------------------------------
+
+    #Get the trainFaces from database and append into a list to apply eigenfaces
+    # method under her faces
+    def __preparePeople(self, people):
         for person in people:
-            images = person.getImages()
-            average = 0.0
-            for imageName in images:
-                imageUrl = person.getName()+DELIMITER+imageName
-                image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
-                self.M, self.N, self.O = image.shape
-                faces.append(image.flatten())
+            person.setFacesMatrix(self.channels)
 
-        return faces
+        return people
 
 #-------------------------------------------------------------------------------
 
     #Select (and remove) randomly a number of faces from train database to test
-    def getRandomFacesToTest(self, trainFaces, numberOfFaces=1):
-        numberOfFaces = 5
-        (M, N) = np.shape(trainFaces)
-        facesToTest = np.zeros((numberOfFaces,N), dtype=np.float32)
+    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
+        M = len(trainPeople)
+        # (M, N) = np.shape(trainFaces)
+        # facesToTest = np.zeros((numberOfFaces,N), dtype=np.float32)
 
         #Setting some faces to analyse results (Temporary)
         # facesToTest[0][:] = trainFaces[0][:]
@@ -90,22 +93,90 @@ class EigenFace(object):
         # facesToTest[4][:] = trainFaces[20][:]
         # trainFaces = np.delete(trainFaces, 20, 0)
 
+        # testPeople = [None] * numberOfPeople
+        testPeople = []
+        temporaryPerson = None
 
-        for i in range(numberOfFaces):
+        for i in range(numberOfPeople):
+            #The total size of trainPeople is inversely proportional to testPeople
+            randomPosition = int(random.random()*(M))
+            temporaryPerson = trainPeople[randomPosition]
 
-            #The total size of trainFaces is inversely proportional to facesToTest
-            randomPosition = int(random.random()*(M-len(facesToTest)))
+            # Can not use person with only one image or less
+            if len(temporaryPerson.getImages()) <= 1:
+                continue
 
-            facesToTest[i][:] = trainFaces[randomPosition][:]
+            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
 
-            #0 is for the axis 0 (row)
-            trainFaces = np.delete(trainFaces, randomPosition, 0)
+            testPeople.append(EigenPerson(name=temporaryPerson.getName(),
+                            images=[temporaryPerson.getImages()[randomImagePerson]],
+                            directory=temporaryPerson.getDirectory()))
 
-            #One face was removed from the matrix, so his length decrease too
-            numberOfFaces -= 1
+            del(temporaryPerson.getImages()[randomImagePerson])
 
-        print 'Dimensions of train and test matrix', np.shape(trainFaces), np.shape(facesToTest)
-        return trainFaces, facesToTest
+            # #The total size of trainFaces is inversely proportional to facesToTest
+            # randomPosition = int(random.random()*(M-len(facesToTest)))
+            #
+            # facesToTest[i][:] = trainFaces[randomPosition][:]
+            #
+            # #0 is for the axis 0 (row)
+            # trainFaces = np.delete(trainFaces, randomPosition, 0)
+            #
+            # #One face was removed from the matrix, so his length decrease too
+            # numberOfFaces -= 1
+        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
+        return trainPeople, testPeople
+
+#-------------------------------------------------------------------------------
+
+    # The names of people must be unique
+    def __findPersonByName(self, people, name):
+        for person in people:
+            if person.getName() == name:
+                return person
+        return 'Person not found in database'
+
+#-------------------------------------------------------------------------------
+
+    def __getPersonByRowMatrix(self, people, row):
+        for personMap in self.__peopleMap:
+            for face in self.__peopleMap[personMap]:
+                if face == row:
+                    return self.__findPersonByName(people, personMap)
+
+#-------------------------------------------------------------------------------
+
+    def __mapMatrixToPerson(self, initialIndex, finalIndex):
+        faceVector = []
+        for i in range(initialIndex, finalIndex):
+            faceVector.append(i)
+
+        return faceVector
+
+#-------------------------------------------------------------------------------
+
+    def __makeTrainFacesMatrix(self, people):
+        faces = people[0].getFacesMatrix()
+
+        self.__peopleMap[people[0].getName()] = self.__mapMatrixToPerson(0, len(faces)-1)
+
+        for i in range(1, len(people)):
+
+            initialIndex = len(faces) - 1
+            faces = np.concatenate((faces, people[i].getFacesMatrix()), axis=0)
+            finalIndex = len(faces) - 1
+
+            self.__peopleMap[people[i].getName()] = self.__mapMatrixToPerson(initialIndex, finalIndex)
+
+        return faces
+
+#-------------------------------------------------------------------------------
+
+    def __makeTestFacesMatrix(self, people):
+        faces = people[0].getFacesMatrix()
+        for i in range(1, len(people)):
+            faces = np.concatenate((faces, people[i].getFacesMatrix()), axis=0)
+        return faces
 
 #-------------------------------------------------------------------------------
 
@@ -117,7 +188,7 @@ class EigenFace(object):
         for j in range(N):
             for i in range(M):
                 average[j] += faces[i][j]
-            average[j] = average[j] / N
+            average[j] = average[j] / M
 
         return average
 
@@ -138,7 +209,6 @@ class EigenFace(object):
 
     #Or surrogate matrix
     def __covarianceMatrix(self, faces):
-
         facesT = faces.transpose()
 
         covarianceMatrix = np.dot(faces, facesT)
@@ -150,7 +220,6 @@ class EigenFace(object):
 
     #Calculate the eigenValues and eigenVectors
     def __eigenVectorValue(self, matrix):
-
         eigenValues, eigenVectors = LA.eig(matrix)
 
         # Plot of energy
@@ -175,18 +244,18 @@ class EigenFace(object):
 #-------------------------------------------------------------------------------
 
     #Method to compare the faces with the eigenfaces
-    def __compareImages(self, originalFaces, transformedFaces):
-        if len(transformedFaces) != len(originalFaces):
+    def __compareImages(self, originalFaces, foundPeople):
+        if len(foundPeople) != len(originalFaces):
             raise "The images sizes must be equal"
 
-        M = len(transformedFaces)
-        transformedFaceList = []
+        M = len(foundPeople)
+        foundPersonList = []
         originalFaceList = []
 
         for i in range(M):
-            transformedFace = transformedFaces[i][:].reshape(self.M, self.N, self.O)
-            transformedFace = correctMatrixValues(transformedFace)
-            transformedFaceList.append(transformedFace)
+            foundPerson = foundPeople[i][:].reshape(self.M, self.N, self.O)
+            foundPerson = correctMatrixValues(foundPerson)
+            foundPersonList.append(foundPerson)
 
             originalFace = originalFaces[i][:].reshape(self.M, self.N, self.O)
             originalFace = correctMatrixValues(originalFace)
@@ -194,7 +263,7 @@ class EigenFace(object):
 
             cv2.namedWindow('Image',cv2.WINDOW_NORMAL)
             cv2.resizeWindow('Image', 1200, 600)
-            imageComparison = np.hstack((originalFace, transformedFace))
+            imageComparison = np.hstack((originalFace, foundPerson))
             cv2.imshow('Image', imageComparison)
             cv2.waitKey(0)
 
@@ -250,29 +319,34 @@ class EigenFace(object):
 
 #-------------------------------------------------------------------------------
 
-    def showResults(self, minError, originalFace, transformedFace):
+    def showResults(self, minError, originalFace, foundPerson):
         print "The min error was: ", minError
         print 'The person found was... '
 
-        transformedFace = transformedFace.reshape(self.M, self.N, self.O)
-        transformedFace = correctMatrixValues(transformedFace)
+        foundPerson = foundPerson.reshape(self.M, self.N, self.O)
+        foundPerson = correctMatrixValues(foundPerson)
 
         originalFace = originalFace.reshape(self.M, self.N, self.O)
         originalFace = correctMatrixValues(originalFace)
 
         cv2.namedWindow('Faces: TrainPerson x TestPerson',cv2.WINDOW_NORMAL)
         cv2.resizeWindow('Faces: TrainPerson x TestPerson', 1200, 600)
-        imageComparison = np.hstack((originalFace, transformedFace))
+        imageComparison = np.hstack((originalFace, foundPerson))
         cv2.imshow('Faces: TrainPerson x TestPerson', imageComparison)
         cv2.waitKey(0)
+
 
 #-------------------------------------------------------------------------------
 
     #The main method
     def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
 
-        trainFaces = self.__getFacesMatrix(self.__people)
-        trainFaces, testFaces = self.getRandomFacesToTest(trainFaces, quantityPeopleToTest)
+        trainPeople, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
+        trainPeople = self.__preparePeople(trainPeople)
+        testPeople = self.__preparePeople(testPeople)
+
+        trainFaces = self.__makeTrainFacesMatrix(trainPeople)
+        testFaces = self.__makeTestFacesMatrix(testPeople)
 
         if self.__eigenFaces == None:
 
@@ -285,31 +359,29 @@ class EigenFace(object):
         eigenTrainFaces = np.dot(self.__eigenFaces, meanFaces.transpose()) # 17x20
         eigenTrainFaces = eigenTrainFaces.transpose()
 
-        #Applying the same operation on testImage
-        # testFaces = []
-
-        # testFaces.append(self.__testImage.flatten())
-
         meanTestFace = self.__removeMean(testFaces, averageVector)
 
         eigenTestFaces = np.dot(self.__eigenFaces, meanTestFace.transpose())
         eigenTestFaces = eigenTestFaces.transpose()
 
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
-        transformedFaces = []
+        foundPeople = []
 
         for i in range(len(euclideanDistances)):
             posMinValue = np.argmin(euclideanDistances[i][:])
 
             #Comparing the testImage X foundPerson
-            transformedFace = trainFaces[posMinValue][:]
+            foundPerson = trainFaces[posMinValue][:]
             originalFace = testFaces[i][:]
-
+            foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
             if showResults == True:
-                self.showResults(euclideanDistances[i][posMinValue], originalFace, transformedFace)
+                self.showResults(euclideanDistances[i][posMinValue], originalFace, foundPerson)
 
-            transformedFaces.append(transformedFace)
+            # print 'Pessoa encontrada: ', foundPerson.getName()
+            foundPeople.append(foundPerson)
+            # compareImages((self.getImagePerson(foundPerson), self.getImagePerson(testPeople[i])))
 
-        return transformedFaces
+
+        return foundPeople, testFaces
 
     #-------------------------------------------------------------------------------
