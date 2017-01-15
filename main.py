@@ -73,8 +73,8 @@ if __name__ == '__main__':
     # completeBrute = CompleteBruteForce()
     # foundPerson, testPeople, percentage = completeBrute.bruteForce()
 
-    eigenFace = EigenFace(quantityPeopleToTrain=10, channels=0)
-    foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=2,precision=50, showResults=True)
+    eigenFace = EigenFace(quantityPeopleToTrain=20, channels=0)
+    foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
 
     print 'Past time:', time.time() - initialTime
 

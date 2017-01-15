@@ -13,9 +13,9 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
 # URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
+URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
@@ -323,6 +323,7 @@ class EigenFace(Recognizer):
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
         foundPeople = []
 
+        numberOfErros = 0.0
         for i in range(len(euclideanDistances)):
             posMinValue = np.argmin(euclideanDistances[i][:])
 
@@ -330,12 +331,15 @@ class EigenFace(Recognizer):
             foundPerson = trainFaces[posMinValue][:]
             originalFace = testFaces[i][:]
             foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
-            if showResults == True:
+            if showResults == True and foundPerson != None:
                 print 'The found person was: ', foundPerson.getName()
                 compareImages((self.getImagePerson(foundPerson), self.getImagePerson(testPeople[i])))
+                if foundPerson.getName() != testPeople[i].getName():
+                    numberOfErros = numberOfErros + 1
 
             foundPeople.append(foundPerson)
 
+        print 'The algorithm found correctly ', 100*(len(testPeople) - numberOfErros)/len(testPeople), '% of people'
         return foundPeople, testFaces
 
     #-------------------------------------------------------------------------------
