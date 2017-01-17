@@ -11,9 +11,8 @@ class Recognizer(object):
     __metaclass__ = ABCMeta
     'This class will provide the basis for all recognitions'
 
-    def __init__(self, channels=0):
+    def __init__(self):
         self.people = None
-        self.channels = channels
 
 #-------------------------------------------------------------------------------
 
@@ -30,24 +29,12 @@ class Recognizer(object):
 #-------------------------------------------------------------------------------
 
     # Get one person from people and set the default dimensions
-    def setDimensionsOfImage(self, people):
-        self.O = 1
-        image = self.getImagePerson(people[0])
-        self.M, self.N, self.O = image.shape
-
-        return self.M, self.N, self.O
-
-#-------------------------------------------------------------------------------
-
-    def getImagePerson(self, person):
-
-        imageName = person.getImages()[0]
-        imageUrl = person.getName()+DELIMITER+imageName
-
-        image = readImage(person.getDirectory()+'/'+imageUrl, self.channels)
-        image = correctMatrixValues(image)
-
-        return image
+    # def setDimensionsOfImage(self, people):
+    #     self.O = 1
+    #     image = self.getImagePerson(people[0])
+    #     self.M, self.N, self.O = image.shape
+    #
+    #     return self.M, self.N, self.O
 
 #-------------------------------------------------------------------------------
 

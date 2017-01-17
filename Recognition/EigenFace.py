@@ -24,13 +24,16 @@ class EigenFace(Recognizer):
     'This class will extract the main components of a image using PCA '
 
     def __init__(self, quantityPeopleToTrain=None, channels=0):
-        super(EigenFace, self).__init__(channels)
-        self.people = self.getPeople(quantityPeopleToTrain)
-        self.M, self.N, self.O = self.setDimensionsOfImage(self.people)
-        self.__eigenFaces = None
-
+        super(EigenFace, self).__init__()
         #I'll use a dictionary to map people to your faces on matrix of faces
         self.__peopleMap = {}
+        self.__eigenFaces = None
+
+        self.__channels = channels
+        self.people = self.getPeople(quantityPeopleToTrain)
+        self.M, self.N, self.O = self.people[0].getDimensionOfImage()
+
+
 
     def setPeople(self, people):
         self.people = people
@@ -55,7 +58,8 @@ class EigenFace(Recognizer):
                 name, image = file.split(DELIMITER)
                 images[j] = image
 
-            person = EigenPerson(name=name, images=images, directory=directory)
+            person = EigenPerson(name=name, images=images, directory=directory,
+                    channels=self.__channels)
             people[i] = person
 
         return people
@@ -65,7 +69,7 @@ class EigenFace(Recognizer):
     # method under her faces
     def __preparePeople(self, people):
         for person in people:
-            person.setFacesMatrix(self.channels)
+            person.setFacesMatrix()
 
         return people
 
@@ -328,12 +332,12 @@ class EigenFace(Recognizer):
             posMinValue = np.argmin(euclideanDistances[i][:])
 
             #Comparing the testImage X foundPerson
-            foundPerson = trainFaces[posMinValue][:]
+            # foundPerson = trainFaces[posMinValue][:]
             originalFace = testFaces[i][:]
             foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
             if showResults == True and foundPerson != None:
                 print 'The found person was: ', foundPerson.getName()
-                compareImages((self.getImagePerson(foundPerson), self.getImagePerson(testPeople[i])))
+                compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))
                 if foundPerson.getName() != testPeople[i].getName():
                     numberOfErros = numberOfErros + 1
 

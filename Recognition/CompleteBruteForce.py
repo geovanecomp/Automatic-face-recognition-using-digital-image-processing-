@@ -20,9 +20,10 @@ class CompleteBruteForce(Recognizer):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
     def __init__(self, channels=0):
-        super(CompleteBruteForce, self).__init__(channels)
+        super(CompleteBruteForce, self).__init__()
+        self.__channels = channels
         self.people = self.getPeople()
-        self.M, self.N, self.O = self.setDimensionsOfImage(self.people)
+        self.M, self.N, self.O = self.people[0].getDimensionOfImage()
 
 #-------------------------------------------------------------------------------
 
@@ -45,7 +46,8 @@ class CompleteBruteForce(Recognizer):
                 name, image = file.split(DELIMITER)
                 images[j] = image
 
-            person = CorrelationPerson(name=name, images=images, directory=directory)
+            person = CorrelationPerson(name=name, images=images,
+                    directory=directory, channels=self.__channels)
             people[i] = person
 
         return people
@@ -88,6 +90,11 @@ class CompleteBruteForce(Recognizer):
             randomPosition = int(random.random()*(M-len(testPeople)))
 
             temporaryPerson = trainPeople[randomPosition]
+
+            # Can not use person with only one image or less
+            if len(temporaryPerson.getImages()) <= 1:
+                continue
+
             randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
 
             testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
@@ -113,7 +120,7 @@ class CompleteBruteForce(Recognizer):
             for imageName in images:
                 imageUrl = person.getName()+DELIMITER+imageName
 
-                image = readImage(person.getDirectory()+'/'+imageUrl, self.channels)
+                image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
                 average += self.__averageImage(image)
 
             average = average / float(len(images))
@@ -154,7 +161,7 @@ class CompleteBruteForce(Recognizer):
 
         for imageName in person.getImages():
             imageUrl = person.getName()+DELIMITER+imageName
-            image = readImage(person.getDirectory()+'/'+imageUrl, self.channels)
+            image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
 
             for i in range(self.M):
                 for j in range(self.N):
@@ -221,19 +228,20 @@ class CompleteBruteForce(Recognizer):
                 testPeople[i].setName(foundPerson[i].getName())
                 print "The person found was: ", testPeople[i].getName(), "with ", maxCorrelations[i]*100, '% of accuracy'
 
-            compareImages((self.getImagePerson(foundPerson[i]), self.getImagePerson(testPeople[i])))
+            compareImages((foundPerson[i].loadFirstImage(), testPeople[i].loadFirstImage()))
+            # compareImages((self.getImagePerson(foundPerson[i]), self.getImagePerson(testPeople[i])))
 
         return testPeople
 
 #-------------------------------------------------------------------------------
 
     #The main method
-    def bruteForce(self, numberOfPeopleToTest=1, threshold=60):
-        self.people, testPeople = self.__getRandomPeopleToTest(self.people, numberOfPeopleToTest)
+    def bruteForce(self, quantityPeopleToTest=1, threshold=60):
+        self.people, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
 
         people = self.__averagePersonImage(self.people)
         testPeople = self.__averagePersonImage(testPeople)
-
+        print testPeople
         foundPerson = [None] * len(testPeople)
         maxCorrelations = np.zeros(len(testPeople))
 

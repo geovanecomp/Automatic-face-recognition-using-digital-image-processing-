@@ -12,9 +12,8 @@ np.set_printoptions(threshold='nan')
 class CorrelationPerson(Person):
     'This class represents one person with the requirements for correlation method'
 
-    def __init__(self, name, images, directory, average=None):
-        super(CorrelationPerson, self).__init__(name, images,  directory)
-        self.__images = images
+    def __init__(self, name, images, directory, average=None, channels=0):
+        super(CorrelationPerson, self).__init__(name, images,  directory, channels)
         self.__average = average
 
     def setAverage(self, average):
