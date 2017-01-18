@@ -52,6 +52,7 @@ class Person(object):
             quantity = len(self.__images)
 
         images = [None] * quantity
+        
         for i in range(quantity):
 
             imageName = self.__images[i]
@@ -60,7 +61,7 @@ class Person(object):
             image = readImage(self.__directory+'/'+imageUrl, self.__channels)
             image = correctMatrixValues(image)
 
-            images.append(image)
+            images[i] = image
 
         return images
 
@@ -78,6 +79,7 @@ class Person(object):
         image = self.loadFirstImage()
         try:
             M, N, O = image.shape
+
         except:
             M, N = image.shape
             O = 1

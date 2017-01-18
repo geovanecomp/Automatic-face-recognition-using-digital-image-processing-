@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def readImage(urlImage, channels=3):
+def readImage(urlImage, channels=0):
     try:
         image = cv2.imread(urlImage, channels)
     except Exception as e:
