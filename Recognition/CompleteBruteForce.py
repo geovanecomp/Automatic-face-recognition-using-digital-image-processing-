@@ -63,7 +63,9 @@ class CompleteBruteForce(Recognizer):
         for i in range(numberOfPeople):
             testPeople[i] = CorrelationPerson(name=trainPeople[i].getName(),
                             images=[trainPeople[i].getImages()[imgIndex]],
-                            directory=trainPeople[i].getDirectory())
+                            directory=trainPeople[i].getDirectory(),
+                            channels=self.__channels)
+
             del(trainPeople[i].getImages()[imgIndex])
 
         return trainPeople, testPeople
@@ -99,7 +101,7 @@ class CompleteBruteForce(Recognizer):
 
             testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
                             images=[temporaryPerson.getImages()[randomImagePerson]],
-                            directory=temporaryPerson.getDirectory())
+                            directory=temporaryPerson.getDirectory(), channels=self.__channels)
 
             del(temporaryPerson.getImages()[randomImagePerson])
 
@@ -114,13 +116,10 @@ class CompleteBruteForce(Recognizer):
     def __averagePersonImage(self, people):
 
         for person in people:
-            images = person.getImages()
             average = 0.0
+            images = person.loadImages()
 
-            for imageName in images:
-                imageUrl = person.getName()+DELIMITER+imageName
-
-                image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
+            for image in images:
                 average += self.__averageImage(image)
 
             average = average / float(len(images))
@@ -159,9 +158,8 @@ class CompleteBruteForce(Recognizer):
 
         avgMatrix = np.zeros((self.M, self.N, self.O), dtype=np.float32)
 
-        for imageName in person.getImages():
-            imageUrl = person.getName()+DELIMITER+imageName
-            image = readImage(person.getDirectory()+'/'+imageUrl, self.__channels)
+        images = person.loadImages()
+        for image in images:
 
             for i in range(self.M):
                 for j in range(self.N):
@@ -219,7 +217,6 @@ class CompleteBruteForce(Recognizer):
 
         # If the correlation is lower than a specified value, the found person
         # is wrong.
-        print 'TAMANHO DAS CORRELACOES', len(maxCorrelations)
         for i in range(len(maxCorrelations)):
             if maxCorrelations[i] < threshold:
                 print "The test person number ", i, " was not found (",maxCorrelations[i]*100,"% of accuracy)"
@@ -229,7 +226,6 @@ class CompleteBruteForce(Recognizer):
                 print "The person found was: ", testPeople[i].getName(), "with ", maxCorrelations[i]*100, '% of accuracy'
 
             compareImages((foundPerson[i].loadFirstImage(), testPeople[i].loadFirstImage()))
-            # compareImages((self.getImagePerson(foundPerson[i]), self.getImagePerson(testPeople[i])))
 
         return testPeople
 
@@ -240,8 +236,9 @@ class CompleteBruteForce(Recognizer):
         self.people, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
 
         people = self.__averagePersonImage(self.people)
+        print 'vai passar a teste people:'
         testPeople = self.__averagePersonImage(testPeople)
-        print testPeople
+
         foundPerson = [None] * len(testPeople)
         maxCorrelations = np.zeros(len(testPeople))
 

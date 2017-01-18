@@ -85,7 +85,8 @@ class EigenFace(Recognizer):
 
             testPeople.append(EigenPerson(name=trainPeople[i].getName(),
                             images=[trainPeople[i].getImages()[imgIndex]],
-                            directory=trainPeople[i].getDirectory()))
+                            directory=trainPeople[i].getDirectory(),
+                            channels=self.__channels))
 
             del(trainPeople[i].getImages()[imgIndex])
 
@@ -117,7 +118,8 @@ class EigenFace(Recognizer):
 
             testPeople.append(EigenPerson(name=temporaryPerson.getName(),
                             images=[temporaryPerson.getImages()[randomImagePerson]],
-                            directory=temporaryPerson.getDirectory()))
+                            directory=temporaryPerson.getDirectory(),
+                            channels=self.__channels))
 
             del(temporaryPerson.getImages()[randomImagePerson])
 
