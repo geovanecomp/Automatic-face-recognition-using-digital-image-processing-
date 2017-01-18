@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
-import cv2
 import numpy as np
-from numpy import linalg as LA
-import matplotlib.pyplot as plt
 import os
 
-from Recognizer import *
-from Person.EigenPerson import *
+from ImageProcessing.HistogramEqualization import *
+from Person.Person import *
 from Utils import *
 
 #To not abbreviate big matrices
@@ -23,10 +20,11 @@ AVERAGE   = 'average'
 class PeopleImageProcessing(object):
     "This class will responsible to apply image processing in people's face"
 
-    def __init__(self, quantityPeople=None, channels=0):
+    def __init__(self, directory, quantityPeople=None, channels=0):
+        self.__directory = directory
         self.__peopleMap = {}
         self.__channels = channels
-        self.people = self.loadPeople()
+        self.people = self.loadPeople(quantityPeople)
         self.M, self.N, self.O = self.people[0].getDimensionOfImage()
 
     def setPeople(self, people):
@@ -62,7 +60,18 @@ class PeopleImageProcessing(object):
         return people
 #-------------------------------------------------------------------------------
 
-    # def applyHistogramEqualization(people):
-    #     transformedPeople = [None] * len(people)
-    #     for person in people:
-    #         person.getI
+    def applyHistogramEqualization(self, people):
+        transformedPeople = [None] * len(people)
+        histogramEqualization = HistogramEqualization()
+        print 'Numero de pessoas: ', len(people)
+        for k, person in enumerate(people):
+            print "Pessoa nº: ",k
+            imageNames = person.getImages()
+            images = person.loadImages()
+            partialDirectory = self.__directory + person.getName() + '/' + person.getName()
+
+            for i, image in enumerate(images):
+                directory = partialDirectory + DELIMITER + imageNames[i]
+                equalizedImage = histogramEqualization.calculate(image)
+                # equalizedImage = cv2.equalizeHist(image)
+                cv2.imwrite(directory, equalizedImage)

@@ -9,10 +9,11 @@ np.set_printoptions(threshold='nan')
 
 class HistogramEqualization(object):
     'This class is responsible for apply the histogram equalization of an image - Distribute the intensity pixels evenly'
-    def __init__(self, image):
-        self.originalImage = image
-        self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
-        self.M, self.N, self.O = self.originalImage.shape
+    def __init__(self):
+        self.originalImage = None
+        self.transformedImage = None
+        self.M, self.N, self.O = None, None, None
+
 
 #1º Step: Normalize the original image's histogram------------------------------
     def __normalizeHistogram(self, histogram):
@@ -88,7 +89,11 @@ class HistogramEqualization(object):
 
 #Final Step --------------------------------------------------------------------
     #Calculate the histogram. If results = true, will show the plots
-    def calculate(self, results=False):
+    def calculate(self, image, results=False):
+
+        self.originalImage = image
+        self.transformedImage = np.zeros(self.originalImage.shape, dtype=np.uint8)
+        self.M, self.N, self.O = self.originalImage.shape
 
         #calcHist(images, channels, mask, histSize, ranges[, hist[, accumulate]])
         #The parameters are:

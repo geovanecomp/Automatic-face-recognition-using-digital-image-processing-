@@ -63,6 +63,7 @@ if __name__ == '__main__':
     # from  import *
     from Recognition.CompleteBruteForce import *
     from Recognition.EigenFace import *
+    from ImageProcessing.PeopleImageProcessing import *
 
     # print 'Escolha um método para o reconheicmento'
     # choice = raw_input()
@@ -70,11 +71,19 @@ if __name__ == '__main__':
     initialTime = time.time()
 
     # CORRELATION METHOD
-    # completeBrute = CompleteBruteForce()
-    # foundPerson, testPeople, percentage = completeBrute.bruteForce()
+    # completeBrute = CompleteBruteForce(channels=3)
+    # foundPerson, testPeople, percentage = completeBrute.bruteForce(quantityPeopleToTest=2)
 
-    eigenFace = EigenFace(quantityPeopleToTrain=20, channels=0)
-    foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+    # EIGENFACES METHOD
+    # eigenFace = EigenFace(quantityPeopleToTrain=20, channels=3)
+    # foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+
+    # IMAGE PROCESSING
+    directory = 'Source/CompactFEI_320x240/EqualizedDatabase/'
+
+    imageProcessing = PeopleImageProcessing(directory)
+    people = imageProcessing.getPeople()
+    imageProcessing.applyHistogramEqualization(people)
 
     print 'Past time:', time.time() - initialTime
 
