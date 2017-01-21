@@ -84,3 +84,20 @@ def compareImages(images):
     imageComparison = np.hstack(images)
     cv2.imshow('Comparison between images', imageComparison)
     cv2.waitKey(0)
+
+#-------------------------------------------------------------------------------
+
+def grayScale(image):
+    try:
+        M, N, O = image.shape
+
+        grayImage = np.zeros((M, N, 1), dtype=np.uint8)
+        initialTime = time.time()
+        for i in range(M):
+            for j in range(N):
+                grayImage[i][j][0] = image[i][j][0] * 0.2989 + image[i][j][1] * 0.5870 + image[i][j][2] * 0.1140
+
+        return grayImage
+
+    except:
+        return image
