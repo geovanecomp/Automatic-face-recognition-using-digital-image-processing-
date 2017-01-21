@@ -54,7 +54,7 @@ class SuavizationFilter(object):
         for x in range(lenX - (self.__dimensionMask - 1)):
             for y in range(lenY - (self.__dimensionMask - 1)):
                 for z in range(lenZ):
-                    value = self.averageMask(image, x, y, z, self.__dimensionMask)
+                    value = self.averageMask(image, x, y, z)
 
                     if value < 0:
                         value = 0
@@ -71,7 +71,7 @@ class SuavizationFilter(object):
         transformedImage = deleteColumns(transformedImage, self.__dimensionMask - 1, 0)
         transformedImage = deleteColumns(transformedImage, self.__dimensionMask - 1, len(transformedImage[0]))
 
-        if self.__nextImageProcessing != None:            
+        if self.__nextImageProcessing != None:
             transformedImage = self.__nextImageProcessing.calculate(transformedImage)
 
         return transformedImage
