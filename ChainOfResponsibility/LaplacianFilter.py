@@ -142,7 +142,7 @@ class LaplacianFilter(object):
             self.__showResults(laplacian, transformedImage)
 
 
-        if self.__nextImageProcessing != None
+        if self.__nextImageProcessing != None:
             transformedImage = self.__nextImageProcessing.calculate(transformedImage)
 
         return transformedImage
