@@ -8,9 +8,9 @@ from os import *
 
 # URLTEST     = 'Source/Bernardo/TestDatabase/'
 # URLTRAIN    = 'Source/Bernardo/TrainDatabase/'
-URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-URLOTHERS   = 'Source/OthersImages/'
-EXTENSION   = '.jpg'
+# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
+# URLOTHERS   = 'Source/OthersImages/'
+# EXTENSION   = '.jpg'
 
 def grayScale(image):
     try:
@@ -64,6 +64,10 @@ if __name__ == '__main__':
     from Recognition.CompleteBruteForce import *
     from Recognition.EigenFace import *
     from ImageProcessing.PeopleImageProcessing import *
+    from ChainOfResponsibility.PeopleChainOfResponsibility import *
+    from ChainOfResponsibility.HistogramEqualization import *
+    from ChainOfResponsibility.SuavizationFilter import *
+    from ChainOfResponsibility.LaplacianFilter import *
 
     # print 'Escolha um método para o reconheicmento'
     # choice = raw_input()
@@ -79,11 +83,27 @@ if __name__ == '__main__':
     # foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
 
     # IMAGE PROCESSING
-    directory = 'Source/CompactFEI_320x240/EqualizedDatabase/'
+    # directory = 'Source/CompactFEI_80x60/ImageProcessing/HistogramEqualization/EqualizedDatabaseColorful/'
+    #
+    # imageProcessing = PeopleImageProcessing(directory)
+    # people = imageProcessing.getPeople()
+    # imageProcessing.applyHistogramEqualization(people)
+    # imageProcessing.applyLaplacianFilter(people)
 
-    imageProcessing = PeopleImageProcessing(directory)
-    people = imageProcessing.getPeople()
-    imageProcessing.applyHistogramEqualization(people)
+    # CHAIN OF RESPONSIBILITY
+    chainOfResponsibility = PeopleChainOfResponsibility(HistogramEqualization(
+        SuavizationFilter(
+            LaplacianFilter()
+        )
+    ), channels=3)
+
+    # chainOfResponsibility = PeopleChainOfResponsibility(SuavizationFilter(
+    #         LaplacianFilter()
+    #     )
+    # )
+    chainOfResponsibility.setDirectory('Source/Bernardo/ImageProcessing/AllMethods/Colorful/')
+    chainOfResponsibility.setPeople(chainOfResponsibility.loadPeople())
+    chainOfResponsibility.calculate()
 
     print 'Past time:', time.time() - initialTime
 
