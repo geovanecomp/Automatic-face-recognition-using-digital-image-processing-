@@ -15,6 +15,31 @@ def readImage(urlImage, channels=0):
 
 #-------------------------------------------------------------------------------
 
+#Functions to manipulate the matrices dimension
+def addRows(matrix, quantity, position, values=0):
+    for i in range(quantity):
+        matrix = np.insert(matrix, position, values, axis=0)
+    return matrix
+
+def addColumns(matrix, quantity, position, values=0):
+    for i in range(quantity):
+        matrix = np.insert(matrix, position, values, axis=1)
+    return matrix
+
+def deleteRows(matrix, quantity, position):
+    for i in range(quantity):
+        position -= 1
+        matrix = np.delete(matrix, position, axis=0)
+    return matrix
+
+def deleteColumns(matrix, quantity, position):
+    for i in range(quantity):
+        position -= 1
+        matrix = np.delete(matrix, position, axis=1)
+    return matrix
+
+#-------------------------------------------------------------------------------
+
 #Transform all values bigger than max value (and min) to be equal max value (and min)
 def correctMatrixValues(matrix, maxValue=255, minValue=0):
     try:
