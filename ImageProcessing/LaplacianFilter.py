@@ -10,8 +10,8 @@ np.set_printoptions(threshold='nan')
 class LaplacianFilter(object):
     'This class is responsible for apply the Laplacian Filter on an image - Emphasizes details'
 
-    def __init__(self, image):
-        self.originalImage = np.float32(image)
+    def __init__(self):
+        self.originalImage = None
 
 #Define the auxiliary functions-------------------------------------------------
 
@@ -81,8 +81,7 @@ class LaplacianFilter(object):
                     if value < 0:
                         value = 0
 
-                    g[i][j][k] = value
-        print g.shape
+                    g[i][j][k] = value    
         return g
 
 #Using the neighborhood method -------------------------------------------------
@@ -129,8 +128,8 @@ class LaplacianFilter(object):
 
 #Main method--------------------------------------------------------------------
 
-    def laplacianFilter(self, results=False):
-
+    def laplacianFilter(self, image, results=False):
+        self.originalImage = np.float32(image)
         transformedImage = np.zeros(self.originalImage.shape, dtype=np.float32)
         M, N, O = np.shape(self.originalImage)
 

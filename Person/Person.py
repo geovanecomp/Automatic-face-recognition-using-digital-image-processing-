@@ -20,6 +20,8 @@ class Person(object):
         self.__directory = directory
         self.__channels = channels
 
+#-------------------------------------------------------------------------------
+
     def setName(self, name):
         self.__name = name
 
@@ -47,12 +49,14 @@ class Person(object):
     def getChannels(self):
         return self.__channels
 
+#-------------------------------------------------------------------------------
+
     def loadImages(self, quantity=None):
         if quantity == None:
             quantity = len(self.__images)
 
         images = [None] * quantity
-        
+
         for i in range(quantity):
 
             imageName = self.__images[i]
@@ -65,6 +69,8 @@ class Person(object):
 
         return images
 
+#-------------------------------------------------------------------------------
+
     def loadFirstImage(self):
 
         imageName = self.__images[0]
@@ -74,6 +80,8 @@ class Person(object):
         image = correctMatrixValues(image)
 
         return image
+
+#-------------------------------------------------------------------------------
 
     def getDimensionOfImage(self):
         image = self.loadFirstImage()
@@ -85,3 +93,5 @@ class Person(object):
             O = 1
 
         return M,N,O
+
+#-------------------------------------------------------------------------------
