@@ -10,9 +10,9 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
+# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_160x120/TrainDatabase/'
+URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
@@ -67,7 +67,7 @@ class PeopleChainOfResponsibility(object):
 #-------------------------------------------------------------------------------
 
     def calculate(self):
-        print 'Number of people to apply Histogram Equalization: ', len(self.__people)
+        print 'Number of people to apply Image Processing: ', len(self.__people)
         for k, person in enumerate(self.__people):
             print "Person nº: ",k
             imageNames = person.getImages()

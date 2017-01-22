@@ -19,14 +19,18 @@ if __name__ == '__main__':
     # choice = raw_input()
 
     initialTime = time.time()
-
+#-------------------------------------------------------------------------------
     # CORRELATION METHOD
     # completeBrute = CompleteBruteForce(channels=3)
     # foundPerson, testPeople, percentage = completeBrute.bruteForce(quantityPeopleToTest=2)
 
+#-------------------------------------------------------------------------------
+
     # EIGENFACES METHOD
     # eigenFace = EigenFace(quantityPeopleToTrain=20, channels=3)
     # foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+
+#-------------------------------------------------------------------------------
 
     # IMAGE PROCESSING
     # directory = 'Source/CompactFEI_80x60/ImageProcessing/HistogramEqualization/EqualizedDatabaseColorful/'
@@ -36,20 +40,29 @@ if __name__ == '__main__':
     # imageProcessing.applyHistogramEqualization(people)
     # imageProcessing.applyLaplacianFilter(people)
 
-    # CHAIN OF RESPONSIBILITY
-    chainOfResponsibility = PeopleChainOfResponsibility(HistogramEqualization(
-        SuavizationFilter(
-            LaplacianFilter()
-        )
-    ), channels=3)
+#-------------------------------------------------------------------------------
 
+    # CHAIN OF RESPONSIBILITY
+    # chainOfResponsibility = PeopleChainOfResponsibility(
+    #     HistogramEqualization(
+    #         SuavizationFilter(
+    #             LaplacianFilter(), dimensionMask=3
+    #         )
+    #     ),
+    #     channels=0)
+    #
     # chainOfResponsibility = PeopleChainOfResponsibility(SuavizationFilter(
-    #         LaplacianFilter()
+    #         LaplacianFilter(), dimensionMask=3
     #     )
     # )
-    chainOfResponsibility.setDirectory('Source/Bernardo/ImageProcessing/AllMethods/Colorful/')
-    chainOfResponsibility.setPeople(chainOfResponsibility.loadPeople())
-    chainOfResponsibility.calculate()
+    #
+    # chainOfResponsibility = PeopleChainOfResponsibility(HistogramEqualization(), channels=0)
+
+    # chainOfResponsibility.setDirectory('Source/CompactFEI_320x240/ImageProcessing/Laplacian/SuavizationFilter_3x3/')
+    # chainOfResponsibility.setPeople(chainOfResponsibility.loadPeople())
+    # chainOfResponsibility.calculate()
+
+#-------------------------------------------------------------------------------
 
     print 'Past time:', time.time() - initialTime
 

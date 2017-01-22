@@ -115,7 +115,7 @@ class HistogramEqualization(object):
 
         if self.__nextImageProcessing != None:
             self.__transformedImage = self.__nextImageProcessing.calculate(self.__transformedImage)
-            
+
         return self.__transformedImage
 
 #Bonus: ------------------------------------------------------------------------
