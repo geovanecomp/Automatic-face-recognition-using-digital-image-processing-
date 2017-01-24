@@ -79,16 +79,16 @@ class EigenFace(Recognizer):
         # testPeople = [None] * numberOfPeople
         testPeople = []
         # Default index to get all fixed images
-        imgIndex = 0
+        # indices = [0, 4]
 
         for i in range(numberOfPeople):
+            for index in self.faceIndices:
+                testPeople.append(EigenPerson(name=trainPeople[i].getName(),
+                                images=[trainPeople[i].getImages()[index]],
+                                directory=trainPeople[i].getDirectory(),
+                                channels=self.__channels))
 
-            testPeople.append(EigenPerson(name=trainPeople[i].getName(),
-                            images=[trainPeople[i].getImages()[imgIndex]],
-                            directory=trainPeople[i].getDirectory(),
-                            channels=self.__channels))
-
-            del(trainPeople[i].getImages()[imgIndex])
+                del(trainPeople[i].getImages()[index])
 
 
         return trainPeople, testPeople
@@ -123,7 +123,6 @@ class EigenFace(Recognizer):
 
             del(temporaryPerson.getImages()[randomImagePerson])
 
-        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
         return trainPeople, testPeople
 
 #-------------------------------------------------------------------------------
@@ -303,7 +302,16 @@ class EigenFace(Recognizer):
     #The main method
     def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
 
-        trainPeople, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
+        # If an index was setted, it's necessary to use fixed faces
+        if self.faceIndices != None:
+            print 'entrou no if', self.faceIndices
+            trainPeople, testPeople = self.__getFixedPeopleToTest(self.people, quantityPeopleToTest)
+        else:
+            print 'entrou no else'
+            trainPeople, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
+
+        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
+
         trainPeople = self.__preparePeople(trainPeople)
         testPeople = self.__preparePeople(testPeople)
 
@@ -333,12 +341,13 @@ class EigenFace(Recognizer):
         for i in range(len(euclideanDistances)):
             posMinValue = np.argmin(euclideanDistances[i][:])
 
-            #Comparing the testImage X foundPerson
-            # foundPerson = trainFaces[posMinValue][:]
-            originalFace = testFaces[i][:]
+            #Comparing the foundPerson X testImage
             foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
             if showResults == True and foundPerson != None:
                 print 'The found person was: ', foundPerson.getName()
+                print 'Distancia euclidiana na pos i: ', i, euclideanDistances[i][:]
+                print 'Erro minimo', euclideanDistances[i][posMinValue]
+                print 'Erro máximo  ', euclideanDistances[i][np.argmax(euclideanDistances[i][:])]
                 compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))
                 if foundPerson.getName() != testPeople[i].getName():
                     numberOfErros = numberOfErros + 1

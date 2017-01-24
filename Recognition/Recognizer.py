@@ -14,6 +14,12 @@ class Recognizer(object):
     def __init__(self):
         self.people = None
 
+        # Used to set the number of faces in the random method
+        self.numberFacesToTest = 1
+
+        # If it's necessary fix some faces to test
+        self.faceIndices = None
+
 #-------------------------------------------------------------------------------
 
     #Get the people from the database
@@ -28,21 +34,21 @@ class Recognizer(object):
 
 #-------------------------------------------------------------------------------
 
-    # Get one person from people and set the default dimensions
-    # def setDimensionsOfImage(self, people):
-    #     self.O = 1
-    #     image = self.getImagePerson(people[0])
-    #     self.M, self.N, self.O = image.shape
-    #
-    #     return self.M, self.N, self.O
-
-#-------------------------------------------------------------------------------
-
     def getNumberOfFaces(self, people):
         count = 0
         for person in people:
             count = len(person.getImages()) + count
 
         return count
+
+#-------------------------------------------------------------------------------
+
+    def setFacesPerPersonToTest(self, numberFacesToTest):
+        self.numberFacesToTest = numberFacesToTest
+
+#-------------------------------------------------------------------------------
+
+    def setFaceIndicesToTest(self, faceIndices):
+        self.faceIndices = faceIndices
 
 #-------------------------------------------------------------------------------

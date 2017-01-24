@@ -27,8 +27,9 @@ if __name__ == '__main__':
 #-------------------------------------------------------------------------------
 
     # EIGENFACES METHOD
-    # eigenFace = EigenFace(quantityPeopleToTrain=20, channels=3)
-    # foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5,precision=100, showResults=True)
+    eigenFace = EigenFace(quantityPeopleToTrain=25, channels=0)
+    eigenFace.setFaceIndicesToTest([0, 4, 8])
+    foundPeople = eigenFace.eigenFaceMethod(quantityPeopleToTest=5, precision=100, showResults=True)
 
 #-------------------------------------------------------------------------------
 
