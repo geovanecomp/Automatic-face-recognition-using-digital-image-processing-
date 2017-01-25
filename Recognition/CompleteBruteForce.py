@@ -10,35 +10,34 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_160x120/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 
 class CompleteBruteForce(Recognizer):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
-    def __init__(self, channels=0):
-        super(CompleteBruteForce, self).__init__()
+    def __init__(self,  urlTrain, quantityPeopleToTrain=None, channels=0):
+        super(CompleteBruteForce, self).__init__(urlTrain)
         self.__channels = channels
-        self.people = self.getPeople()
+        self.people = self.getPeople(quantityPeopleToTrain)
         self.M, self.N, self.O = self.people[0].getDimensionOfImage()
+
 
 #-------------------------------------------------------------------------------
 
     #Get all people to compare
     def getPeople(self, numberOfPeople=None):
+
         if numberOfPeople == None:
             #-1 its because this function count the TrainDatabase too
-            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
+            numberOfPeople = len(list(os.walk(self.urlTrain))) - 1;
 
         people = [None] * numberOfPeople
 
         for i in range(numberOfPeople):
 
             #Getting the url, folders and files
-            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+            directory, folders, files = os.walk(self.urlTrain+str(i+1)).next()
 
             images = [None] * len(files)
 
@@ -55,19 +54,23 @@ class CompleteBruteForce(Recognizer):
 #-------------------------------------------------------------------------------
 
     def __getFixedPeopleToTest(self, trainPeople, numberOfPeople=1):
-        testPeople = [None] * numberOfPeople
-
-        # Default index to get all fixed images
-        imgIndex = 0
+        testPeople = []
 
         for i in range(numberOfPeople):
-            testPeople[i] = CorrelationPerson(name=trainPeople[i].getName(),
-                            images=[trainPeople[i].getImages()[imgIndex]],
-                            directory=trainPeople[i].getDirectory(),
-                            channels=self.__channels)
+            for index in self.faceIndices:
+                testPeople.append(CorrelationPerson(name=trainPeople[i].getName(),
+                                images=[trainPeople[i].getImages()[index]],
+                                directory=trainPeople[i].getDirectory(),
+                                channels=self.__channels))
 
-            del(trainPeople[i].getImages()[imgIndex])
 
+
+        # After allocating the people to test, I need remove them from trainPeople
+        # Starting from the last element to do not re-allocate the array
+        for i in range(numberOfPeople):
+            for j in reversed(range(len(self.faceIndices))):
+                del(trainPeople[i].getImages()[self.faceIndices[j]])
+                
         return trainPeople, testPeople
 
 
@@ -105,8 +108,6 @@ class CompleteBruteForce(Recognizer):
 
             del(temporaryPerson.getImages()[randomImagePerson])
 
-
-        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
         return trainPeople, testPeople
 
 
@@ -217,26 +218,38 @@ class CompleteBruteForce(Recognizer):
 
         # If the correlation is lower than a specified value, the found person
         # is wrong.
+        numberOfErros = 0.0
         for i in range(len(maxCorrelations)):
+            if foundPerson[i].getName() != testPeople[i].getName():
+                print 'Name of the found person: ', foundPerson[i].getName()
+                print 'Name of the test person: ', testPeople[i].getName()
+                numberOfErros = numberOfErros + 1
             if maxCorrelations[i] < threshold:
                 print "The test person number ", i, " was not found (",maxCorrelations[i]*100,"% of accuracy)"
 
             else:
-                testPeople[i].setName(foundPerson[i].getName())
-                print "The person found was: ", testPeople[i].getName(), "with ", maxCorrelations[i]*100, '% of accuracy'
+                # testPeople[i].setName(foundPerson[i].getName())
+                print "The person found was: ", foundPerson[i].getName(), "with ", maxCorrelations[i]*100, '% of accuracy'
 
             compareImages((foundPerson[i].loadFirstImage(), testPeople[i].loadFirstImage()))
 
+        print 'The algorithm found correctly ', 100*(len(testPeople) - numberOfErros)/len(testPeople), '% of people'
         return testPeople
 
 #-------------------------------------------------------------------------------
 
     #The main method
-    def bruteForce(self, quantityPeopleToTest=1, threshold=60):
-        self.people, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
+    def bruteForce(self, quantityPeopleToTest=1, threshold=60, showResults=True):
+
+        if self.faceIndices != None:
+            trainPeople, testPeople = self.__getFixedPeopleToTest(self.people, quantityPeopleToTest)
+        else:
+            trainPeople, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
+
+        print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
 
         people = self.__averagePersonImage(self.people)
-        print 'vai passar a teste people:'
+
         testPeople = self.__averagePersonImage(testPeople)
 
         foundPerson = [None] * len(testPeople)
@@ -250,6 +263,8 @@ class CompleteBruteForce(Recognizer):
                     foundPerson[i]     = person
                     maxCorrelations[i]  = results[i][j]
 
-        testPeople = self.analyseResults(foundPerson, testPeople, maxCorrelations, threshold)
+
+        if showResults == True:
+            testPeople = self.analyseResults(foundPerson, testPeople, maxCorrelations, threshold)
 
         return foundPerson, testPeople, maxCorrelations

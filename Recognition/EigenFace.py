@@ -15,7 +15,14 @@ np.set_printoptions(threshold='nan')
 #Constants
 # URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
 # URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/' # 60%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/SuavizationFilter_3x3/' # 60%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/AllMethods/Grayscale/' # 53%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/EqualizedDatabase/' # 60%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/EqualizedDatabaseOpenCv/' #  66.667%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/Grayscale/' #  53.3333%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/SuavizationFilter_5x5/' #  60%
+# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/Adaptative/' #  66.667%
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
@@ -23,8 +30,8 @@ AVERAGE   = 'average'
 class EigenFace(Recognizer):
     'This class will extract the main components of a image using PCA '
 
-    def __init__(self, quantityPeopleToTrain=None, channels=0):
-        super(EigenFace, self).__init__()
+    def __init__(self, urlTrain, quantityPeopleToTrain=None, channels=0):
+        super(EigenFace, self).__init__(urlTrain)
         #I'll use a dictionary to map people to your faces on matrix of faces
         self.__peopleMap = {}
         self.__eigenFaces = None
@@ -43,14 +50,13 @@ class EigenFace(Recognizer):
     def getPeople(self, numberOfPeople=None):
         if numberOfPeople == None:
             #-1 its because this function count the TrainDatabase too
-            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
-
+            numberOfPeople = len(list(os.walk(self.urlTrain))) - 1;
         people = [None] * numberOfPeople
 
         for i in range(numberOfPeople):
 
             #Getting the url, folders and files
-            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+            directory, folders, files = os.walk(self.urlTrain+str(i+1)).next()
 
             images = [None] * len(files)
 
@@ -76,10 +82,7 @@ class EigenFace(Recognizer):
 #-------------------------------------------------------------------------------
 
     def __getFixedPeopleToTest(self, trainPeople, numberOfPeople=1):
-        # testPeople = [None] * numberOfPeople
         testPeople = []
-        # Default index to get all fixed images
-        # indices = [0, 4]
 
         for i in range(numberOfPeople):
             for index in self.faceIndices:
@@ -88,8 +91,12 @@ class EigenFace(Recognizer):
                                 directory=trainPeople[i].getDirectory(),
                                 channels=self.__channels))
 
-                del(trainPeople[i].getImages()[index])
 
+        # After allocating the people to test, I need remove them from trainPeople
+        # Starting from the last element to do not re-allocate the array
+        for i in range(numberOfPeople):
+            for j in reversed(range(len(self.faceIndices))):
+                del(trainPeople[i].getImages()[self.faceIndices[j]])
 
         return trainPeople, testPeople
 
@@ -304,10 +311,8 @@ class EigenFace(Recognizer):
 
         # If an index was setted, it's necessary to use fixed faces
         if self.faceIndices != None:
-            print 'entrou no if', self.faceIndices
             trainPeople, testPeople = self.__getFixedPeopleToTest(self.people, quantityPeopleToTest)
         else:
-            print 'entrou no else'
             trainPeople, testPeople = self.__getRandomPeopleToTest(self.people, quantityPeopleToTest)
 
         print 'Number of trainFaces and testFaces:', self.getNumberOfFaces(trainPeople), self.getNumberOfFaces(testPeople)
@@ -345,7 +350,6 @@ class EigenFace(Recognizer):
             foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
             if showResults == True and foundPerson != None:
                 print 'The found person was: ', foundPerson.getName()
-                print 'Distancia euclidiana na pos i: ', i, euclideanDistances[i][:]
                 print 'Erro minimo', euclideanDistances[i][posMinValue]
                 print 'Erro máximo  ', euclideanDistances[i][np.argmax(euclideanDistances[i][:])]
                 compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))

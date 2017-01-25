@@ -10,14 +10,9 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_160x120/TrainDatabase/'
-URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
-
-# class ChainOfResponsibilityImageProcessing(object):
 
 class PeopleChainOfResponsibility(object):
     def __init__(self, nextImageProcessing, channels=0):

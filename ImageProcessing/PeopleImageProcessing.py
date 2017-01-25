@@ -12,7 +12,7 @@ np.set_printoptions(threshold='nan')
 
 #Constants
 # URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
+# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
 # URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/'
 EXTENSION = '.jpg'
 DELIMITER = '-'
@@ -21,7 +21,8 @@ AVERAGE   = 'average'
 class PeopleImageProcessing(object):
     "This class will responsible to apply image processing in people's face"
 
-    def __init__(self, directory, quantityPeople=None, channels=3):
+    def __init__(self, urlTrain, directory, quantityPeople=None, channels=3):
+        self.__urlTrain = urlTrain
         self.__directory = directory
         self.__channels = channels
         self.people = self.loadPeople(quantityPeople)
@@ -38,14 +39,14 @@ class PeopleImageProcessing(object):
     def loadPeople(self, numberOfPeople=None):
         if numberOfPeople == None:
             #-1 its because this function count the TrainDatabase too
-            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
+            numberOfPeople = len(list(os.walk(self.__urlTrain))) - 1;
 
         people = [None] * numberOfPeople
 
         for i in range(numberOfPeople):
 
             #Getting the url, folders and files
-            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+            directory, folders, files = os.walk(self.__urlTrain+str(i+1)).next()
 
             images = [None] * len(files)
 
