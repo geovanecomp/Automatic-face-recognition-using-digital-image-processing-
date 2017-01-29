@@ -70,7 +70,7 @@ class CompleteBruteForce(Recognizer):
         for i in range(numberOfPeople):
             for j in reversed(range(len(self.faceIndices))):
                 del(trainPeople[i].getImages()[self.faceIndices[j]])
-                
+
         return trainPeople, testPeople
 
 
@@ -167,7 +167,7 @@ class CompleteBruteForce(Recognizer):
                     for k in range(self.O):
                         avgMatrix[i][j][k] += image[i][j][k]
 
-            avgMatrix = avgMatrix / len(person.getImages())
+        avgMatrix = avgMatrix / len(person.getImages())
 
             #If I want to save the avgMatrix as image
             #cv2.imwrite(os.path.join(person.getDirectory(), person.getName()+DELIMITER+AVERAGE+EXTENSION), avgMatrix)
@@ -200,7 +200,7 @@ class CompleteBruteForce(Recognizer):
 
         correlation = numerator / (denominator1 * denominator2)**0.5
 
-        print "TrainPerson: ", trainPerson.getName() ," The images are " , correlation * 100, "% equals"
+        # print "TrainPerson: ", trainPerson.getName() ,"  The images are " , correlation * 100, "% equals"
         return correlation
 
 #-------------------------------------------------------------------------------

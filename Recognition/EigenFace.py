@@ -305,6 +305,16 @@ class EigenFace(Recognizer):
         return euclideanDistance
 
 #-------------------------------------------------------------------------------
+    def __showResults(self, trainFace, testFace):
+        trainFace = trainFace.reshape(self.M, self.N, self.O)
+        trainFace = correctMatrixValues(trainFace)
+
+        testFace = testFace.reshape(self.M, self.N, self.O)
+        testFace = correctMatrixValues(testFace)
+
+        compareImages((trainFace,testFace))
+
+#-------------------------------------------------------------------------------
 
     #The main method
     def eigenFaceMethod(self, quantityPeopleToTest=1, precision=100, showResults=False):
@@ -338,21 +348,23 @@ class EigenFace(Recognizer):
 
         eigenTestFaces = np.dot(self.__eigenFaces, meanTestFace.transpose())
         eigenTestFaces = eigenTestFaces.transpose()
-
+        
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
         foundPeople = []
 
         numberOfErros = 0.0
         for i in range(len(euclideanDistances)):
-            posMinValue = np.argmin(euclideanDistances[i][:])
+            minPosError = np.argmin(euclideanDistances[i][:])
 
             #Comparing the foundPerson X testImage
-            foundPerson = self.__getPersonByRowMatrix(trainPeople, posMinValue)
+            foundPerson = self.__getPersonByRowMatrix(trainPeople, minPosError-1)
             if showResults == True and foundPerson != None:
-                print 'The found person was: ', foundPerson.getName()
-                print 'Erro minimo', euclideanDistances[i][posMinValue]
+                self.__showResults(trainFaces[minPosError][:], testFaces[i][:])
+
+                print 'The found person was: ', foundPerson.getName(), 'The test was: ', testPeople[i].getName()
+                print 'Erro minimo', euclideanDistances[i][minPosError]
                 print 'Erro máximo  ', euclideanDistances[i][np.argmax(euclideanDistances[i][:])]
-                compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))
+
                 if foundPerson.getName() != testPeople[i].getName():
                     numberOfErros = numberOfErros + 1
 
