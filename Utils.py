@@ -84,6 +84,7 @@ def compareImages(images):
     imageComparison = np.hstack(images)
     cv2.imshow('Comparison between images', imageComparison)
     cv2.waitKey(0)
+    return imageComparison
 
 #-------------------------------------------------------------------------------
 
