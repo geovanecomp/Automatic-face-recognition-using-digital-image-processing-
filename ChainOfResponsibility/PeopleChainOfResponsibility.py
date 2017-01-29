@@ -15,7 +15,8 @@ DELIMITER = '-'
 AVERAGE   = 'average'
 
 class PeopleChainOfResponsibility(object):
-    def __init__(self, nextImageProcessing, channels=0):
+    def __init__(self, urlTrain, nextImageProcessing, channels=0):
+        self.__urlTrain = urlTrain
         self.__nextImageProcessing = nextImageProcessing
         self.__people = None
         self.__directory = None
@@ -38,14 +39,14 @@ class PeopleChainOfResponsibility(object):
     def loadPeople(self, numberOfPeople=None):
         if numberOfPeople == None:
             #-1 its because this function count the TrainDatabase too
-            numberOfPeople = len(list(os.walk(URLTRAIN))) - 1;
+            numberOfPeople = len(list(os.walk(self.__urlTrain))) - 1;
 
         people = [None] * numberOfPeople
 
         for i in range(numberOfPeople):
 
             #Getting the url, folders and files
-            directory, folders, files = os.walk(URLTRAIN+str(i+1)).next()
+            directory, folders, files = os.walk(self.__urlTrain+str(i+1)).next()
 
             images = [None] * len(files)
 

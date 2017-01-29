@@ -42,7 +42,10 @@ class HistogramEqualization(object):
         #Creating the transformation function 's'
         s[0] = np.rint( (L - 1) * histogram[0] ) #Round to closest int number
         for i in range(initialValue, histLen):
-            s[i] = np.rint( s[i-1] + (L - 1) * histogram[i] )
+            value = np.rint( s[i-1] + (L - 1) * histogram[i] )
+            if value > 255:
+                value = 255
+            s[i] = value
 
         return s
 
@@ -115,12 +118,5 @@ class HistogramEqualization(object):
 
         if self.__nextImageProcessing != None:
             self.__transformedImage = self.__nextImageProcessing.calculate(self.__transformedImage)
-
+            
         return self.__transformedImage
-
-#Bonus: ------------------------------------------------------------------------
-#Otimization for histogram equalization
-# clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-# cl1 = clahe.apply(originalImage)
-# res = np.hstack((originalImage,cl1))
-# cv2.imwrite('clahe_2.jpg',res)
