@@ -11,9 +11,10 @@ class Recognizer(object):
     __metaclass__ = ABCMeta
     'This class will provide the basis for all recognitions'
 
-    def __init__(self, urlTrain):
+    def __init__(self, urlTrain, channels=0):
         self.people = None
         self.urlTrain = urlTrain
+        self.channels = channels
 
         # Used to set the number of faces in the random method
         self.numberFacesToTest = 1

@@ -13,12 +13,12 @@ np.set_printoptions(threshold='nan')
 EXTENSION = '.jpg'
 DELIMITER = '-'
 
-class CompleteBruteForce(Recognizer):
+class Correlation(Recognizer):
     'This class will compare pixel by pixel the difference between the test image and the train images '
 
     def __init__(self,  urlTrain, quantityPeopleToTrain=None, channels=0):
-        super(CompleteBruteForce, self).__init__(urlTrain)
-        self.__channels = channels
+        super(Correlation, self).__init__(urlTrain)
+        self.channels = channels
         self.people = self.getPeople(quantityPeopleToTrain)
         self.M, self.N, self.O = self.people[0].getDimensionOfImage()
 
@@ -46,7 +46,7 @@ class CompleteBruteForce(Recognizer):
                 images[j] = image
 
             person = CorrelationPerson(name=name, images=images,
-                    directory=directory, channels=self.__channels)
+                    directory=directory, channels=self.channels)
             people[i] = person
 
         return people
@@ -61,7 +61,7 @@ class CompleteBruteForce(Recognizer):
                 testPeople.append(CorrelationPerson(name=trainPeople[i].getName(),
                                 images=[trainPeople[i].getImages()[index]],
                                 directory=trainPeople[i].getDirectory(),
-                                channels=self.__channels))
+                                channels=self.channels))
 
 
 
@@ -83,10 +83,7 @@ class CompleteBruteForce(Recognizer):
 
         M = len(trainPeople)
 
-        # Setting some fixed faces to analyse results (Temporary - To TCC)
-        # trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
-
-        testPeople = [None] * numberOfPeople
+        testPeople = []
 
         temporaryPerson = None
         for i in range(numberOfPeople):
@@ -100,13 +97,15 @@ class CompleteBruteForce(Recognizer):
             if len(temporaryPerson.getImages()) <= 1:
                 continue
 
-            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
+            # Getting random faces too
+            for j in range(self.numberFacesToTest):
+                randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
 
-            testPeople[i] = CorrelationPerson(name=temporaryPerson.getName(),
-                            images=[temporaryPerson.getImages()[randomImagePerson]],
-                            directory=temporaryPerson.getDirectory(), channels=self.__channels)
+                testPeople.append(CorrelationPerson(name=temporaryPerson.getName(),
+                                images=[temporaryPerson.getImages()[randomImagePerson]],
+                                directory=temporaryPerson.getDirectory(), channels=self.channels))
 
-            del(temporaryPerson.getImages()[randomImagePerson])
+                del(temporaryPerson.getImages()[randomImagePerson])
 
         return trainPeople, testPeople
 

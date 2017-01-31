@@ -13,30 +13,17 @@ from Utils import *
 np.set_printoptions(threshold='nan')
 
 #Constants
-# URLTRAIN  = 'Source/Bernardo/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_80x60/TrainDatabase/'
-# URLTRAIN    = 'Source/CompactFEI_320x240/TrainDatabase/' # 60%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/SuavizationFilter_3x3/' # 60%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/AllMethods/Grayscale/' # 53%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/EqualizedDatabase/' # 60%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/EqualizedDatabaseOpenCv/' #  66.667%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/Grayscale/' #  53.3333%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/Laplacian/SuavizationFilter_5x5/' #  60%
-# URLTRAIN    = 'Source/CompactFEI_320x240/ImageProcessing/HistogramEqualization/Adaptative/' #  66.667%
-EXTENSION = '.jpg'
 DELIMITER = '-'
-AVERAGE   = 'average'
 
 class EigenFace(Recognizer):
     'This class will extract the main components of a image using PCA '
 
     def __init__(self, urlTrain, quantityPeopleToTrain=None, channels=0):
-        super(EigenFace, self).__init__(urlTrain)
+        super(EigenFace, self).__init__(urlTrain, channels)
         #I'll use a dictionary to map people to your faces on matrix of faces
         self.__peopleMap = {}
         self.__eigenFaces = None
 
-        self.__channels = channels
         self.people = self.getPeople(quantityPeopleToTrain)
         self.M, self.N, self.O = self.people[0].getDimensionOfImage()
 
@@ -65,7 +52,7 @@ class EigenFace(Recognizer):
                 images[j] = image
 
             person = EigenPerson(name=name, images=images, directory=directory,
-                    channels=self.__channels)
+                    channels=self.channels)
             people[i] = person
 
         return people
@@ -89,7 +76,7 @@ class EigenFace(Recognizer):
                 testPeople.append(EigenPerson(name=trainPeople[i].getName(),
                                 images=[trainPeople[i].getImages()[index]],
                                 directory=trainPeople[i].getDirectory(),
-                                channels=self.__channels))
+                                channels=self.channels))
 
 
         # After allocating the people to test, I need remove them from trainPeople
@@ -103,10 +90,7 @@ class EigenFace(Recognizer):
 #-------------------------------------------------------------------------------
 
     #Select (and remove) randomly a number of faces from train database to test
-    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
-
-        # Setting some fixed faces to analyse results (Temporary - To TCC)
-        # trainPeople, testPeople = self.__getFixedPeopleToTest(trainPeople, numberOfPeople)
+    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):        
 
         M = len(trainPeople)
         testPeople = []
@@ -121,14 +105,17 @@ class EigenFace(Recognizer):
             if len(temporaryPerson.getImages()) <= 1:
                 continue
 
-            randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
+            # Getting random faces too
+            for j in range(self.numberFacesToTest):
 
-            testPeople.append(EigenPerson(name=temporaryPerson.getName(),
-                            images=[temporaryPerson.getImages()[randomImagePerson]],
-                            directory=temporaryPerson.getDirectory(),
-                            channels=self.__channels))
+                randomImagePerson = int(random.random()*len(temporaryPerson.getImages()))
 
-            del(temporaryPerson.getImages()[randomImagePerson])
+                testPeople.append(EigenPerson(name=temporaryPerson.getName(),
+                                images=[temporaryPerson.getImages()[randomImagePerson]],
+                                directory=temporaryPerson.getDirectory(),
+                                channels=self.channels))
+
+                del(temporaryPerson.getImages()[randomImagePerson])
 
         return trainPeople, testPeople
 
@@ -147,6 +134,7 @@ class EigenFace(Recognizer):
     # With the map it's possible recover the face on the matrix of faces and
     # allocate to respective person
     def __getPersonByRowMatrix(self, people, row):
+
         for personMap in self.__peopleMap:
             for face in self.__peopleMap[personMap]:
                 if face == row:
@@ -170,13 +158,13 @@ class EigenFace(Recognizer):
     def __makeTrainFacesMatrix(self, people):
         faces = people[0].getFacesMatrix()
 
-        self.__peopleMap[people[0].getName()] = self.__mapMatrixToPerson(0, len(faces)-1)
+        self.__peopleMap[people[0].getName()] = self.__mapMatrixToPerson(0, len(faces))
 
         for i in range(1, len(people)):
 
-            initialIndex = len(faces) - 1
+            initialIndex = len(faces)
             faces = np.concatenate((faces, people[i].getFacesMatrix()), axis=0)
-            finalIndex = len(faces) - 1
+            finalIndex = len(faces)
 
             self.__peopleMap[people[i].getName()] = self.__mapMatrixToPerson(initialIndex, finalIndex)
 
@@ -348,7 +336,7 @@ class EigenFace(Recognizer):
 
         eigenTestFaces = np.dot(self.__eigenFaces, meanTestFace.transpose())
         eigenTestFaces = eigenTestFaces.transpose()
-        
+
         euclideanDistances = self.__applyEuclidianDistance(eigenTrainFaces, eigenTestFaces)
         foundPeople = []
 
@@ -357,13 +345,16 @@ class EigenFace(Recognizer):
             minPosError = np.argmin(euclideanDistances[i][:])
 
             #Comparing the foundPerson X testImage
-            foundPerson = self.__getPersonByRowMatrix(trainPeople, minPosError-1)
+            foundPerson = self.__getPersonByRowMatrix(trainPeople, minPosError)
+            print foundPerson
             if showResults == True and foundPerson != None:
-                self.__showResults(trainFaces[minPosError][:], testFaces[i][:])
 
                 print 'The found person was: ', foundPerson.getName(), 'The test was: ', testPeople[i].getName()
-                print 'Erro minimo', euclideanDistances[i][minPosError]
-                print 'Erro máximo  ', euclideanDistances[i][np.argmax(euclideanDistances[i][:])]
+                print 'Min error: ', euclideanDistances[i][minPosError]
+                print 'Max error:', euclideanDistances[i][np.argmax(euclideanDistances[i][:])]
+
+                self.__showResults(trainFaces[minPosError][:], testFaces[i][:])
+                # compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))
 
                 if foundPerson.getName() != testPeople[i].getName():
                     numberOfErros = numberOfErros + 1
