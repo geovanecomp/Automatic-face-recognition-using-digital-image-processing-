@@ -90,7 +90,7 @@ class EigenFace(Recognizer):
 #-------------------------------------------------------------------------------
 
     #Select (and remove) randomly a number of faces from train database to test
-    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):        
+    def __getRandomPeopleToTest(self, trainPeople, numberOfPeople=1):
 
         M = len(trainPeople)
         testPeople = []
@@ -346,7 +346,7 @@ class EigenFace(Recognizer):
 
             #Comparing the foundPerson X testImage
             foundPerson = self.__getPersonByRowMatrix(trainPeople, minPosError)
-            print foundPerson
+
             if showResults == True and foundPerson != None:
 
                 print 'The found person was: ', foundPerson.getName(), 'The test was: ', testPeople[i].getName()

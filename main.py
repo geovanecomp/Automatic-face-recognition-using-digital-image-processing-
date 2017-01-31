@@ -7,7 +7,14 @@ from os import *
 import numpy as np
 # Constants
 # URLTRAIN = 'Source/FEI/TrainDatabase/'
-URLTRAIN = 'Source/CompactFEI_80x60/TrainDatabase/'
+URLTRAIN = 'Source/CompactFEI_160x120/TrainDatabase/'
+# URLTRAIN = 'Source/CompactFEI_80x60/ImageProcessing/Laplacian/Grayscale/'
+# URLTRAIN = 'Source/CompactFEI_80x60/ImageProcessing/Laplacian/SuavizationFilter_3x3/'
+# URLTRAIN = 'Source/CompactFEI_80x60/ImageProcessing/HistogramEqualization/EqualizedDatabase/'
+# URLTRAIN = 'Source/CompactFEI_80x60/ImageProcessing/AllMethods/Grayscale/'
+# URLTRAIN = 'Source/Bernardo/TrainDatabase/'
+
+
 # URLTRAIN = 'Source/Bernardo/TrainDatabase/'
 
 if __name__ == '__main__':
@@ -37,7 +44,8 @@ if __name__ == '__main__':
     # EIGENFACES METHOD
     eigenFace = EigenFace(urlTrain=URLTRAIN, quantityPeopleToTrain=25, channels=0)
     eigenFace.setFaceIndicesToTest([3, 7, 11, 13])
-    foundPeople, testFaces = eigenFace.eigenFaceMethod(quantityPeopleToTest=6, precision=20, showResults=True)
+    # eigenFace.setFaceIndicesToTest([0, 4, 8, 12])
+    foundPeople, testFaces = eigenFace.eigenFaceMethod(quantityPeopleToTest=5, precision=20, showResults=True)
 
 
 #-------------------------------------------------------------------------------
