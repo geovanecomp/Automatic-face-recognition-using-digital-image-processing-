@@ -14,7 +14,7 @@ EXTENSION = '.jpg'
 DELIMITER = '-'
 AVERAGE   = 'average'
 
-class PeopleChainOfResponsibility(object):
+class ImageProcessingChainOfResponsibility(object):
     def __init__(self, urlTrain, nextImageProcessing, channels=0):
         self.__urlTrain = urlTrain
         self.__nextImageProcessing = nextImageProcessing
