@@ -17,6 +17,39 @@ URLTRAIN = 'Source/CompactFEI_80x60/TrainDatabase/'
 
 # URLTRAIN = 'Source/Bernardo/TrainDatabase/'
 
+def imageProcesing():
+    print 'How many people do you want to apply image processing?:'
+    numberOfPeople = int(raw_input())
+
+    # CHAIN OF RESPONSIBILITY
+    #-------------------------------------------------------------------------------
+    # All methods
+    # chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN,
+    #     SuavizationFilter(
+    #         LaplacianFilter(
+    #             HistogramEqualization()
+    #         ), dimensionMask=3
+    #     ),
+    #     channels=0)
+
+#-------------------------------------------------------------------------------
+
+    # Two methods
+    # chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN, SuavizationFilter(
+    #         LaplacianFilter(), dimensionMask=3
+    #     )
+    # )
+
+#-------------------------------------------------------------------------------
+
+    # One method
+    chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN, LaplacianFilter(), channels=0)
+
+#-------------------------------------------------------------------------------
+    chainOfResponsibility.setDirectory('Source/quicktest/')
+    chainOfResponsibility.setPeople(chainOfResponsibility.loadPeople(numberOfPeople))
+    chainOfResponsibility.calculate()
+
 def standardDeviation (average, results):
     differenceSquare = []
     for i in range(results):
@@ -93,38 +126,15 @@ if __name__ == '__main__':
     elif choice == 2:
         correlationMethod()
     elif choice == 3:
-        correlationMethod()
+        imageProcesing()
+
+#-------------------------------------------------------------------------------
 
     # EIGENFACES METHOD
     # eigenFace = EigenFace(urlTrain=URLTRAIN, quantityPeopleToTrain=25, channels=0)
     # eigenFace.setFaceIndicesToTest([3, 7, 11, 13])
     # eigenFace.setFaceIndicesToTest([0, 4, 8, 12])
     # foundPeople, testFaces = eigenFace.eigenFaceMethod(quantityPeopleToTest=5, precision=20, showResults=True)
-
-#-------------------------------------------------------------------------------
-
-    # CHAIN OF RESPONSIBILITY
-    # All methods
-    # chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN,
-    #     SuavizationFilter(
-    #         LaplacianFilter(
-    #             HistogramEqualization()
-    #         ), dimensionMask=3
-    #     ),
-    #     channels=0)
-
-    # Two methods
-    # chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN, SuavizationFilter(
-    #         LaplacianFilter(), dimensionMask=3
-    #     )
-    # )
-
-    # One method
-    # chainOfResponsibility = ImageProcessingChainOfResponsibility(URLTRAIN, LaplacianFilter(), channels=0)
-    #
-    # chainOfResponsibility.setDirectory('Source/CompactFEI_320x240/Comparacoes/Laplaciano_com_mascara/')
-    # chainOfResponsibility.setPeople(chainOfResponsibility.loadPeople(3))
-    # chainOfResponsibility.calculate()
 
 #-------------------------------------------------------------------------------
 
