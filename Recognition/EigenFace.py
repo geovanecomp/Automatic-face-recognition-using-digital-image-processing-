@@ -72,12 +72,14 @@ class EigenFace(Recognizer):
         testPeople = []
 
         for i in range(numberOfPeople):
+            print 'Para a pessoa de teste nº: ', i
             for index in self.faceIndices:
                 testPeople.append(EigenPerson(name=trainPeople[i].getName(),
                                 images=[trainPeople[i].getImages()[index]],
                                 directory=trainPeople[i].getDirectory(),
                                 channels=self.channels))
 
+                print 'Nome da imagem: ', trainPeople[i].getImages()[index]
 
         # After allocating the people to test, I need remove them from trainPeople
         # Starting from the last element to do not re-allocate the array
@@ -96,12 +98,15 @@ class EigenFace(Recognizer):
         testPeople = []
         temporaryPerson = None
 
-        for i in range(numberOfPeople):
+        # Getting random and unique people
+        randomPeople = random.sample(range(len(trainPeople)), numberOfPeople)
+        for i in randomPeople:
             #The total size of trainPeople is inversely proportional to testPeople
-            randomPosition = int(random.random()*(M))
-            temporaryPerson = trainPeople[randomPosition]
+            # randomPosition = int(random.random()*(M))
+            temporaryPerson = trainPeople[i]
+            print '\nPessoa: ', temporaryPerson.getName()
 
-            # Can not use person with only one image or less
+            # Can not use perso0n with only one image or less
             if len(temporaryPerson.getImages()) <= 1:
                 continue
 
@@ -114,7 +119,7 @@ class EigenFace(Recognizer):
                                 images=[temporaryPerson.getImages()[randomImagePerson]],
                                 directory=temporaryPerson.getDirectory(),
                                 channels=self.channels))
-
+                print 'Face: ', temporaryPerson.getImages()[randomImagePerson]
                 del(temporaryPerson.getImages()[randomImagePerson])
 
         return trainPeople, testPeople
@@ -356,12 +361,13 @@ class EigenFace(Recognizer):
                 self.__showResults(trainFaces[minPosError][:], testFaces[i][:])
                 # compareImages((foundPerson.loadFirstImage(), testPeople[i].loadFirstImage()))
 
-                if foundPerson.getName() != testPeople[i].getName():
-                    numberOfErros = numberOfErros + 1
+            if foundPerson.getName() != testPeople[i].getName():
+                numberOfErros = numberOfErros + 1
 
             foundPeople.append(foundPerson)
 
-        print 'The algorithm found correctly ', 100*(len(testPeople) - numberOfErros)/len(testPeople), '% of people'
-        return foundPeople, testFaces
+        successRate = 100*(len(testPeople) - numberOfErros)/len(testPeople)
+        print 'The algorithm found correctly ', successRate, '% of people'
+        return foundPeople, testFaces, successRate
 
     #-------------------------------------------------------------------------------
